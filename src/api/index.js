@@ -1,8 +1,18 @@
 import axios from 'axios'
 
+// 根据环境判断baseURL
+const getBaseURL = () => {
+  // 开发环境使用相对路径（通过Vite代理）
+  if (import.meta.env.DEV) {
+    return ''
+  }
+  // 生产环境直接使用后端API地址
+  return 'https://mskapi.cnwbhw.com'
+}
+
 // 创建axios实例
 const api = axios.create({
-  baseURL: '', // 使用相对路径，让Vite代理处理
+  baseURL: getBaseURL(),
   timeout: 10000,
   headers: {
     'Content-Type': 'application/x-www-form-urlencoded'
