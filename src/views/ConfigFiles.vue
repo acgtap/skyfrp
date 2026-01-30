@@ -30,7 +30,7 @@
         <div v-for="tunnel in tunnels" :key="tunnel.Tunnel_name" 
              class="bg-white rounded-lg border border-gray-200 p-6">
           <div class="flex items-center justify-between mb-4">
-            <h3 class="text-lg font-semibold text-gray-900">{{ tunnel.Tunnel_name }}</h3>
+            <h3 class="text-lg font-semibold text-gray-900">隧道名称：{{ tunnel.Tunnel_name }}</h3>
             <span class="px-2 py-1 text-xs rounded-full"
                   :class="tunnel.tunnel_state === 'online' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'">
               {{ tunnel.tunnel_state === 'online' ? '在线' : '离线' }}

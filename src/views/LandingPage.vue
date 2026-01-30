@@ -483,8 +483,10 @@ const startLogin = async () => {
   try {
     console.log('开始QQ登录流程...')
     
-    // 尝试传递本地回调地址
-    const redirectUri = 'http://127.0.0.1:5173/'
+    // 根据环境设置回调地址
+    const redirectUri = import.meta.env.DEV 
+      ? 'http://127.0.0.1:5173/' 
+      : 'https://skyfrp.katomegumi.net/'
     console.log('尝试设置回调地址:', redirectUri)
     
     const response = await authAPI.getQQLoginUrl(redirectUri)
