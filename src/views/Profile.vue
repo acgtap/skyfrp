@@ -33,11 +33,9 @@
         <!-- 账户统计卡片 -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div class="bg-white rounded-xl border border-gray-200 p-5 shadow-sm hover:shadow-md transition-shadow">
+            <p class="text-sm text-gray-500 mb-3">剩余流量</p>
             <div class="flex items-center justify-between">
-              <div>
-                <p class="text-sm text-gray-500 mb-1">剩余流量</p>
-                <p class="text-2xl font-bold text-black">{{ formatTraffic(userStore.userInfo.users_traffic) }}</p>
-              </div>
+              <p class="text-2xl text-black">{{ formatTraffic(userStore.userInfo.users_traffic) }}</p>
               <div class="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center">
                 <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10"></path>
@@ -47,11 +45,9 @@
           </div>
           
           <div class="bg-white rounded-xl border border-gray-200 p-5 shadow-sm hover:shadow-md transition-shadow">
+            <p class="text-sm text-gray-500 mb-3">节点速度</p>
             <div class="flex items-center justify-between">
-              <div>
-                <p class="text-sm text-gray-500 mb-1">节点速度</p>
-                <p class="text-2xl font-bold text-black">{{ userStore.userInfo.node_speed }} Mbps</p>
-              </div>
+              <p class="text-2xl text-black">{{ userStore.userInfo.node_speed }} Mbps</p>
               <div class="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center">
                 <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
@@ -61,11 +57,9 @@
           </div>
           
           <div class="bg-white rounded-xl border border-gray-200 p-5 shadow-sm hover:shadow-md transition-shadow">
+            <p class="text-sm text-gray-500 mb-3">流量包数量</p>
             <div class="flex items-center justify-between">
-              <div>
-                <p class="text-sm text-gray-500 mb-1">流量包数量</p>
-                <p class="text-2xl font-bold text-black">{{ userStore.userInfo.traffic_packages?.length || 0 }} 个</p>
-              </div>
+              <p class="text-2xl text-black">{{ userStore.userInfo.traffic_packages?.length || 0 }} 个</p>
               <div class="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center">
                 <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"></path>

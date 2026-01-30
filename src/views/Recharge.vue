@@ -27,7 +27,7 @@
                         @click="selectedAmount = amount"
                         class="p-3 border-2 rounded-lg text-center transition-all duration-200 hover:shadow-md"
                         :class="selectedAmount === amount ? 'border-[#7367f0] bg-[#7367f0]/5 text-[#7367f0]' : 'border-gray-200 hover:border-[#7367f0]/50'">
-                  <div class="text-lg font-bold">¥{{ amount }}</div>
+                  <div class="text-lg">¥{{ amount }}</div>
                 </button>
               </div>
               
