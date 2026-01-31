@@ -112,13 +112,14 @@
             用户日志
           </router-link>
           
-          <button @click="openHelpDocs" 
-                  class="flex items-center px-4 py-3 text-base font-medium text-gray-700 hover:bg-[#7367f0]/5 hover:text-[#7367f0] rounded-xl transition-all duration-200 group w-full text-left">
+          <router-link to="/help" 
+                       class="flex items-center px-4 py-3 text-base font-medium rounded-xl transition-all duration-200 group"
+                       :class="$route.name === 'Help' ? 'bg-white text-gray-900 border-r-4 border-[#7367f0] shadow-md' : 'text-gray-700 hover:bg-[#7367f0]/5 hover:text-[#7367f0]'">
             <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
             </svg>
             帮助文档
-          </button>
+          </router-link>
         </div>
       </nav>
     </div>
@@ -134,7 +135,15 @@
             </svg>
           </button>
           
-          <div class="flex items-center space-x-4">
+          <div class="flex items-center space-x-4 ml-auto">
+            <!-- 签到按钮 -->
+            <button @click="handleSignIn" 
+                    :disabled="signInLoading || hasSignedToday"
+                    :class="hasSignedToday ? 'bg-gray-400 cursor-not-allowed' : 'bg-gradient-to-r from-[#7367f0] to-[#5f5bd8] hover:from-[#5f5bd8] hover:to-[#4c46d8]'"
+                    class="text-white px-4 py-2 rounded-xl text-sm font-medium transition-all duration-300 shadow-lg disabled:shadow-none">
+              {{ hasSignedToday ? '已签到' : (signInLoading ? '签到中...' : '每日签到') }}
+            </button>
+            
             <!-- 用户信息下拉菜单 -->
             <div class="relative group">
               <button class="flex items-center space-x-3 bg-white/50 backdrop-blur-sm rounded-xl px-4 py-2 border border-gray-100 hover:bg-white transition-colors">
@@ -149,7 +158,7 @@
               </button>
               
               <!-- 下拉菜单 - hover显示 -->
-              <div class="absolute right-0 mt-2 w-64 bg-white rounded-xl shadow-xl border border-gray-100 py-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50" style="margin-right: -180px;">
+              <div class="absolute right-0 mt-2 w-64 bg-white rounded-xl shadow-xl border border-gray-100 py-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
                 <div class="px-4 py-3 border-b border-gray-100">
                   <div class="flex items-center space-x-3">
                     <img :src="userStore.userInfo.users_faceimg || '/default-avatar.png'" 
@@ -171,21 +180,17 @@
                 </button>
               </div>
             </div>
-            
-            <!-- 签到按钮 -->
-            <button @click="handleSignIn" 
-                    :disabled="signInLoading || hasSignedToday"
-                    :class="hasSignedToday ? 'bg-gray-400 cursor-not-allowed' : 'bg-gradient-to-r from-[#7367f0] to-[#5f5bd8] hover:from-[#5f5bd8] hover:to-[#4c46d8]'"
-                    class="text-white px-4 py-2 rounded-xl text-sm font-medium transition-all duration-300 shadow-lg disabled:shadow-none">
-              {{ hasSignedToday ? '已签到' : (signInLoading ? '签到中...' : '每日签到') }}
-            </button>
           </div>
         </div>
       </header>
 
       <!-- 页面内容 -->
       <main class="p-6">
-        <slot />
+        <transition name="content-fade" mode="out-in">
+          <div :key="$route.path">
+            <slot />
+          </div>
+        </transition>
       </main>
     </div>
   </div>
@@ -248,46 +253,57 @@ const handleSignIn = async () => {
       localStorage.setItem('lastSignInDate', today)
       hasSignedToday.value = true
       
-      // 使用美观的成功弹窗
+      // 使用美观的成功弹窗，带动画效果
       const modal = document.createElement('div')
-      modal.className = 'fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4'
+      modal.className = 'fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4'
+      modal.style.animation = 'fadeIn 0.3s ease-out'
       modal.innerHTML = `
-        <div class="bg-white rounded-2xl w-full max-w-md shadow-2xl border border-gray-100 overflow-hidden animate-in fade-in zoom-in duration-200">
+        <div class="bg-white rounded-2xl w-full max-w-md shadow-2xl border border-gray-100 overflow-hidden" style="animation: modalContentIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)">
           <!-- 内容区 -->
           <div class="p-6">
-            <!-- 图标 -->
+            <!-- 成功图标 - 带动画 -->
             <div class="flex justify-center mb-4">
-              <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center">
-                <svg class="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+              <div class="relative">
+                <svg class="w-20 h-20" viewBox="0 0 52 52">
+                  <circle class="success-circle" cx="26" cy="26" r="25" fill="none" stroke="#10b981" stroke-width="2"/>
+                  <path class="success-checkmark" fill="none" stroke="#10b981" stroke-width="3" stroke-linecap="round" d="M14 27l7 7 16-16"/>
                 </svg>
+                <!-- 脉冲效果 -->
+                <div class="absolute inset-0 bg-green-400 rounded-full opacity-20" style="animation: pulse 1.5s ease-out infinite"></div>
               </div>
             </div>
             
-            <!-- 标题 -->
-            <h3 class="text-xl font-bold text-gray-900 text-center mb-3">签到成功</h3>
+            <!-- 标题 - 带淡入动画 -->
+            <h3 class="text-2xl font-bold text-gray-900 text-center mb-3" style="animation: fadeIn 0.5s ease-out 0.3s both">签到成功</h3>
             
-            <!-- 奖励信息 -->
-            <div class="bg-gradient-to-r from-[#7367f0]/10 to-[#5f5bd8]/10 rounded-xl p-4 mb-4 border border-[#7367f0]/20">
+            <!-- 奖励信息 - 带弹跳动画 -->
+            <div class="bg-gradient-to-r from-[#7367f0]/10 to-[#5f5bd8]/10 rounded-xl p-5 mb-4 border border-[#7367f0]/20" style="animation: bounce 0.6s ease-out 0.5s both">
               <div class="text-center">
-                <p class="text-sm text-gray-600 mb-2">获得流量奖励</p>
-                <p class="text-3xl font-bold text-[#7367f0]">${response.data.reward} MB</p>
+                <p class="text-sm text-gray-600 mb-2">🎉 获得流量奖励</p>
+                <p class="text-4xl font-bold text-[#7367f0] mb-1">${response.data.add_traffic || 0} MB</p>
+                <p class="text-xs text-gray-500">已自动添加到您的账户</p>
               </div>
             </div>
             
             <!-- 连续签到天数 -->
             ${response.data.continuous_days ? `
-              <p class="text-center text-sm text-gray-600">
-                已连续签到 <span class="font-bold text-[#7367f0]">${response.data.continuous_days}</span> 天
-              </p>
+              <div class="text-center text-sm text-gray-600 mb-2" style="animation: fadeIn 0.5s ease-out 0.7s both">
+                <span class="inline-flex items-center px-3 py-1 rounded-full bg-purple-100 text-purple-700">
+                  <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                  </svg>
+                  已连续签到 <span class="font-bold mx-1">${response.data.continuous_days}</span> 天
+                </span>
+              </div>
             ` : ''}
           </div>
           
           <!-- 按钮区 -->
           <div class="px-6 pb-6">
             <button data-action="confirm" 
-                    class="w-full bg-gradient-to-r from-[#7367f0] to-[#5f5bd8] hover:from-[#5f5bd8] hover:to-[#4c46d8] text-white px-6 py-3 rounded-xl font-medium transition-all duration-200 shadow-lg shadow-[#7367f0]/30">
-              太好了
+                    class="w-full bg-gradient-to-r from-[#7367f0] to-[#5f5bd8] hover:from-[#5f5bd8] hover:to-[#4c46d8] text-white px-6 py-3 rounded-xl font-medium transition-all duration-200 shadow-lg shadow-[#7367f0]/30 hover:scale-105 transform"
+                    style="animation: fadeIn 0.5s ease-out 0.8s both">
+              太好了 🎊
             </button>
           </div>
         </div>
@@ -500,11 +516,6 @@ const handleLogout = () => {
   document.addEventListener('keydown', handleEsc)
 }
 
-// 打开帮助文档
-const openHelpDocs = () => {
-  window.open('https://docs.skyfrp.com', '_blank')
-}
-
 // 处理头像加载错误
 const handleImageError = (event) => {
   event.target.src = '/default-avatar.png'
@@ -522,3 +533,22 @@ onMounted(() => {
   checkSignInStatus()
 })
 </script>
+
+
+<style scoped>
+/* 内容区域切换动画 */
+.content-fade-enter-active,
+.content-fade-leave-active {
+  transition: all 0.25s ease;
+}
+
+.content-fade-enter-from {
+  opacity: 0;
+  transform: translateY(10px);
+}
+
+.content-fade-leave-to {
+  opacity: 0;
+  transform: translateY(-10px);
+}
+</style>

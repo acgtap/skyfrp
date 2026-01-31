@@ -54,15 +54,12 @@
       </div>
       
       <div class="bg-[#e8e6f5] rounded-xl p-6 hover:shadow-md transition-all">
-        <p class="text-gray-600 text-base mb-3">实时速度</p>
+        <p class="text-gray-600 text-base mb-3">剩余流量</p>
         <div class="flex items-center justify-between">
-          <div>
-            <p class="text-lg text-gray-900">↑ {{ tunnelStats.uploadSpeed }}</p>
-            <p class="text-lg text-gray-900">↓ {{ tunnelStats.downloadSpeed }}</p>
-          </div>
+          <p class="text-3xl text-gray-900">{{ formatTraffic(userStore.userInfo.users_traffic) }}</p>
           <div class="w-12 h-12 bg-white/50 rounded-xl flex items-center justify-center">
             <svg class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4"></path>
             </svg>
           </div>
         </div>
@@ -78,19 +75,14 @@
             <svg class="w-5 h-5 text-[#7367f0] mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path>
             </svg>
-            系统通知
+            系统公告
           </h3>
-          <div v-if="notifications.length > 0" class="space-y-3 max-h-[400px] overflow-y-auto">
-            <div v-for="(notification, index) in notifications" :key="index" 
-                 @click="showNotificationDetail(notification)"
-                 class="pb-3 border-b border-gray-100 last:border-0 cursor-pointer hover:bg-gray-50 p-2 rounded-lg transition-colors">
-              <p class="text-sm text-black mb-1">{{ notification.title }}</p>
-              <p class="text-xs text-gray-600 mb-1 line-clamp-2">{{ notification.content }}</p>
-              <span class="text-xs text-gray-400">{{ notification.time }}</span>
-            </div>
+          <div v-if="notificationHtml" class="max-h-[400px] overflow-y-auto">
+            <div v-html="notificationHtml" class="prose prose-sm max-w-none"></div>
           </div>
           <div v-else class="text-sm text-gray-500 text-center py-8">
-            暂无新通知
+            <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-[#7367f0] mx-auto mb-2"></div>
+            加载中...
           </div>
         </div>
       </div>
@@ -108,7 +100,7 @@
                 <p class="text-black">官方QQ群</p>
                 <p class="text-sm text-gray-600">572658815</p>
               </div>
-              <button class="bg-[#7367f0] hover:bg-[#5f5bd8] text-white px-4 py-2 rounded-lg text-sm transition-colors">
+              <button @click="joinQQGroup" class="bg-[#7367f0] hover:bg-[#5f5bd8] text-white px-4 py-2 rounded-lg text-sm transition-colors">
                 加入
               </button>
             </div>
@@ -142,24 +134,9 @@ import { userStore } from '../stores/user'
 import { tunnelAPI } from '../api'
 import DashboardLayout from '../components/DashboardLayout.vue'
 
-// 通知数据（模拟数据，后续从后端获取）
-const notifications = ref([
-  {
-    title: '欢迎使用SkyFRP',
-    content: '感谢您选择SkyFRP内网穿透服务，如有问题请联系客服。我们提供7x24小时技术支持，确保您的服务稳定运行。',
-    time: '2小时前'
-  },
-  {
-    title: '系统维护通知',
-    content: '系统将于本周六凌晨2:00-4:00进行例行维护，请提前做好准备。维护期间部分功能可能暂时无法使用，给您带来不便敬请谅解。',
-    time: '1天前'
-  },
-  {
-    title: '新功能上线',
-    content: '我们新增了流量统计功能，您可以实时查看隧道的上传下载速度。同时优化了节点选择界面，让您更方便地选择合适的节点。',
-    time: '3天前'
-  }
-])
+// 通知数据（从API获取）
+const notifications = ref([])
+const notificationHtml = ref('')
 
 // 隧道统计数据
 const tunnelStats = ref({
@@ -175,55 +152,7 @@ const todayStats = ref({
   download: 0
 })
 
-// 显示通知详情
-const showNotificationDetail = (notification) => {
-  const modal = document.createElement('div')
-  modal.className = 'fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4'
-  modal.innerHTML = `
-    <div class="bg-white rounded-2xl w-full max-w-2xl shadow-2xl border border-gray-100 overflow-hidden animate-in fade-in zoom-in duration-200">
-      <!-- 标题栏 -->
-      <div class="bg-gradient-to-r from-[#7367f0] to-[#5f5bd8] px-6 py-4 flex items-center justify-between">
-        <h3 class="text-xl font-bold text-white">${notification.title}</h3>
-        <span class="text-white/80 text-sm">${notification.time}</span>
-      </div>
-      
-      <!-- 内容区 -->
-      <div class="p-6">
-        <p class="text-gray-700 leading-relaxed whitespace-pre-line">${notification.content}</p>
-      </div>
-      
-      <!-- 按钮区 -->
-      <div class="px-6 pb-6">
-        <button data-action="close" 
-                class="w-full bg-gradient-to-r from-[#7367f0] to-[#5f5bd8] hover:from-[#5f5bd8] hover:to-[#4c46d8] text-white px-6 py-3 rounded-xl font-medium transition-all duration-200 shadow-lg shadow-[#7367f0]/30">
-          我知道了
-        </button>
-      </div>
-    </div>
-  `
-  document.body.appendChild(modal)
-  
-  // 关闭按钮
-  modal.querySelector('[data-action="close"]').addEventListener('click', () => {
-    modal.remove()
-  })
-  
-  // 点击背景关闭
-  modal.addEventListener('click', (e) => {
-    if (e.target === modal) {
-      modal.remove()
-    }
-  })
-  
-  // ESC键关闭
-  const handleEsc = (e) => {
-    if (e.key === 'Escape') {
-      modal.remove()
-      document.removeEventListener('keydown', handleEsc)
-    }
-  }
-  document.addEventListener('keydown', handleEsc)
-}
+// 显示通知详情（已移除，改为直接显示HTML公告）
 
 // 格式化流量显示
 const formatTraffic = (traffic) => {
@@ -267,10 +196,36 @@ const loadTodayStats = () => {
   }
 }
 
+// 加载系统公告
+const loadNotifications = async () => {
+  try {
+    // 开发环境使用代理，生产环境直接请求
+    const url = import.meta.env.DEV 
+      ? '/notice/Notice.php?json=1'
+      : 'https://msk.cnwbhw.com/service/Notice/Notice.php?json=1'
+    
+    const response = await fetch(url)
+    const data = await response.json()
+    
+    if (data && data.html_announcement) {
+      notificationHtml.value = data.html_announcement
+    }
+  } catch (error) {
+    console.error('加载公告失败:', error)
+    notificationHtml.value = '<p class="text-sm text-gray-500 text-center py-4">加载公告失败</p>'
+  }
+}
+
+// 加入QQ群
+const joinQQGroup = () => {
+  window.open('https://qun.qq.com/universal-share/share?ac=1&authKey=py0eEw6f35ao84w8aKMd0amlB46O7DNt8%2BUEg%2Fzbl1i%2FYp7CrG9jgDbpgCAnzmmk&busi_data=eyJncm91cENvZGUiOiI1NzI2NTg4MTUiLCJ0b2tlbiI6ImJsVFlEMFpLMUdRM2JMUnl4NXloamxPYmRGVENYeTIrc1dqWUJxTFFKWjJjUGJ3VzZ0d01YeDNzYlBxVWhJZmwiLCJ1aW4iOiIxMzM3MjEyMzMxIn0%3D&data=e8-IKxOIHbmTkm5FlIk0bTBaGetMO0rbz7rftAdAPLAbhQOOg7m7Y5Ao6tYMnuaMQj6Zedi7beHi_BQPQ-bhgQ&svctype=4&tempid=h5_group_info', '_blank')
+}
+
 onMounted(() => {
   // 加载数据
   loadTunnelStats()
   loadTodayStats()
+  loadNotifications()
   
   // 定时刷新统计数据（每30秒）
   setInterval(() => {

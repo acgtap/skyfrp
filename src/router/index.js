@@ -14,6 +14,7 @@ import Shop from '../views/Shop.vue'
 import UserLogs from '../views/UserLogs.vue'
 import AuthSuccess from '../views/AuthSuccess.vue'
 import ApiTest from '../views/ApiTest.vue'
+import Help from '../views/Help.vue'
 
 const routes = [
   {
@@ -83,6 +84,12 @@ const routes = [
     path: '/logs',
     name: 'UserLogs',
     component: UserLogs,
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/help',
+    name: 'Help',
+    component: Help,
     meta: { requiresAuth: true }
   },
   {

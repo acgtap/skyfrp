@@ -44,28 +44,67 @@
           <div class="flex justify-between items-start mb-4">
             <div>
               <h3 class="text-lg font-semibold text-gray-900">隧道名称：{{ tunnel.Tunnel_name }}</h3>
-              <div class="flex items-center mt-1">
+              <div class="flex items-center mt-2 space-x-2">
                 <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
-                      :class="tunnel.tunnel_state === 'online' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'">
+                      :class="(tunnel.tunnel_state === 'online' || tunnel.tunnel_state === 'true' || tunnel.tunnel_state === true) ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'">
                   <span class="w-1.5 h-1.5 rounded-full mr-1"
-                        :class="tunnel.tunnel_state === 'online' ? 'bg-green-400' : 'bg-red-400'"></span>
-                  {{ tunnel.tunnel_state === 'online' ? '在线' : '离线' }}
+                        :class="(tunnel.tunnel_state === 'online' || tunnel.tunnel_state === 'true' || tunnel.tunnel_state === true) ? 'bg-green-400' : 'bg-red-400'"></span>
+                  {{ (tunnel.tunnel_state === 'online' || tunnel.tunnel_state === 'true' || tunnel.tunnel_state === true) ? '在线' : '离线' }}
+                </span>
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                  <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2m-2-4h.01M17 16h.01"></path>
+                  </svg>
+                  {{ getNodeName(tunnel.node_ip) }}
                 </span>
               </div>
             </div>
             <div class="flex space-x-2">
-              <button @click="getConfig(tunnel.Tunnel_name)"
-                      class="text-blue-600 hover:text-blue-800 p-1 rounded">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                </svg>
-              </button>
-              <button @click="deleteTunnel(tunnel.Tunnel_name)"
-                      class="text-red-600 hover:text-red-800 p-1 rounded">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
-                </svg>
-              </button>
+              <div class="relative group">
+                <button @click="showTunnelDetail(tunnel)"
+                        class="text-gray-600 hover:text-gray-800 p-2 rounded hover:bg-gray-100 transition-colors">
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                  </svg>
+                </button>
+                <!-- 提示框 -->
+                <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-1.5 bg-gray-900 text-white text-xs rounded-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 whitespace-nowrap z-10">
+                  查看详情
+                  <div class="absolute top-full left-1/2 transform -translate-x-1/2 -mt-1">
+                    <div class="border-4 border-transparent border-t-gray-900"></div>
+                  </div>
+                </div>
+              </div>
+              <div class="relative group">
+                <button @click="getConfig(tunnel.Tunnel_name)"
+                        class="text-blue-600 hover:text-blue-800 p-2 rounded hover:bg-blue-50 transition-colors">
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                  </svg>
+                </button>
+                <!-- 提示框 -->
+                <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-1.5 bg-gray-900 text-white text-xs rounded-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 whitespace-nowrap z-10">
+                  获取配置文件
+                  <div class="absolute top-full left-1/2 transform -translate-x-1/2 -mt-1">
+                    <div class="border-4 border-transparent border-t-gray-900"></div>
+                  </div>
+                </div>
+              </div>
+              <div class="relative group">
+                <button @click="deleteTunnel(tunnel.Tunnel_name)"
+                        class="text-red-600 hover:text-red-800 p-2 rounded hover:bg-red-50 transition-colors">
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                  </svg>
+                </button>
+                <!-- 提示框 -->
+                <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-1.5 bg-gray-900 text-white text-xs rounded-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 whitespace-nowrap z-10">
+                  删除隧道
+                  <div class="absolute top-full left-1/2 transform -translate-x-1/2 -mt-1">
+                    <div class="border-4 border-transparent border-t-gray-900"></div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
           
@@ -75,16 +114,12 @@
               <span class="font-mono">{{ tunnel.Local_ip }}:{{ tunnel.Local_port }}</span>
             </div>
             <div class="flex justify-between">
-              <span>远程端口:</span>
-              <span class="font-mono">{{ tunnel.return_port }}</span>
+              <span>连接地址:</span>
+              <span class="font-mono">{{ tunnel.node_ip }}:{{ tunnel.return_port }}</span>
             </div>
             <div class="flex justify-between">
               <span>协议:</span>
               <span class="uppercase">{{ tunnel.use_agreement }}</span>
-            </div>
-            <div class="flex justify-between">
-              <span>节点:</span>
-              <span>{{ tunnel.node_ip }}</span>
             </div>
           </div>
         </div>
@@ -144,8 +179,8 @@
               <option value="">请选择协议</option>
               <option value="tcp">TCP</option>
               <option value="udp">UDP</option>
-              <option value="http">HTTP</option>
-              <option value="https">HTTPS</option>
+              <!-- <option value="http">HTTP</option> -->
+              <!-- <option value="https">HTTPS</option> -->
             </select>
           </div>
           
@@ -178,11 +213,14 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import { userStore } from '../stores/user'
 import { tunnelAPI, nodeAPI } from '../api'
 import DashboardLayout from '../components/DashboardLayout.vue'
 import { logUserAction, LOG_TYPES, LOG_ACTIONS } from '../utils/logger'
 import { showSuccess, showError, showConfirm } from '../utils/modal'
+
+const router = useRouter()
 
 // 数据
 const tunnels = ref([])
@@ -268,7 +306,7 @@ const createTunnel = async () => {
         nodeIp: createForm.value.nodeIp
       })
       
-      showSuccess('隧道创建成功！', '创建成功')
+      // 移除成功弹窗，直接关闭模态框
       showCreateModal.value = false
       // 重置表单
       createForm.value = {
@@ -319,7 +357,7 @@ const deleteTunnel = async (tunnelName) => {
             tunnelName
           })
           
-          showSuccess('隧道删除成功！', '删除成功')
+          // 移除成功弹窗，直接重新加载列表
           loadTunnels()
         } else {
           // 记录删除失败日志
@@ -337,29 +375,223 @@ const deleteTunnel = async (tunnelName) => {
   )
 }
 
-// 获取配置
-const getConfig = async (tunnelName) => {
-  try {
-    const response = await tunnelAPI.getNodeConfig(userStore.tempKey, tunnelName)
-    if (response.code === 0) {
-      // 创建下载链接
-      const blob = new Blob([response.data.config], { type: 'text/plain' })
-      const url = window.URL.createObjectURL(blob)
-      const a = document.createElement('a')
-      a.href = url
-      a.download = `${tunnelName}.ini`
-      document.body.appendChild(a)
-      a.click()
-      document.body.removeChild(a)
-      window.URL.revokeObjectURL(url)
-      
-      showSuccess('配置文件下载成功！', '下载成功')
+// 获取配置 - 跳转到配置文件页面
+const getConfig = (tunnelName) => {
+  // 跳转到配置文件页面，并传递隧道名称参数
+  router.push({
+    name: 'ConfigFiles',
+    query: { tunnel: tunnelName }
+  })
+}
+
+// 获取节点名称（简约格式：海外/中国·地点）
+const getNodeName = (nodeIp) => {
+  const node = nodes.value.find(n => n.ip === nodeIp)
+  if (!node) return '未知节点'
+  
+  // 判断是否为中国节点
+  const isChinaNode = node.node_region && (
+    node.node_region.includes('中国') || 
+    node.node_region.includes('China') ||
+    node.node_region.includes('CN') ||
+    node.node_name.includes('中国') ||
+    node.node_name.includes('国内')
+  )
+  
+  // 提取地点信息（从node_name或node_region中提取）
+  let location = node.node_region || node.node_name
+  // 移除常见的前缀词
+  location = location.replace(/中国|海外|国内|国际|节点|Node|Server/gi, '').trim()
+  
+  // 返回简约格式
+  return isChinaNode ? `中国·${location}` : `海外·${location}`
+}
+
+// 查看隧道详情
+const showTunnelDetail = (tunnel) => {
+  // 格式化创建时间
+  const createTime = tunnel.creation_time || '未知'
+  // 格式化最近使用时间
+  const recentUseTime = tunnel.Recent_use_time || '未知'
+  // 格式化隧道状态
+  const isOnline = tunnel.tunnel_state === 'online' || tunnel.tunnel_state === 'true' || tunnel.tunnel_state === true
+  const statusText = isOnline ? '在线' : '离线'
+  const statusColor = isOnline ? 'bg-green-500' : 'bg-red-500'
+  // 格式化流量
+  const formatTraffic = (traffic) => {
+    if (!traffic || traffic === 0) return '0 MB'
+    const mb = traffic
+    if (mb < 1024) {
+      return `${mb} MB`
     } else {
-      showError(response.msg || '获取配置失败', '获取失败')
+      return `${(mb / 1024).toFixed(2)} GB`
     }
-  } catch (error) {
-    showError('获取配置失败，请稍后重试', '获取失败')
   }
+  
+  // 查找节点名称
+  const node = nodes.value.find(n => n.ip === tunnel.node_ip)
+  const nodeName = node ? `${node.node_name} (${node.node_region})` : '未知节点'
+  
+  const modal = document.createElement('div')
+  modal.className = 'fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4'
+  modal.innerHTML = `
+    <div class="bg-white rounded-2xl w-full max-w-2xl shadow-2xl border border-gray-100 overflow-hidden animate-in fade-in zoom-in duration-200 max-h-[90vh] overflow-y-auto">
+      <!-- 标题栏 -->
+      <div class="bg-gradient-to-r from-[#7367f0] to-[#5f5bd8] px-6 py-4 flex items-center justify-between sticky top-0 z-10">
+        <h3 class="text-xl font-bold text-white">隧道详情</h3>
+        <span class="px-3 py-1 text-xs rounded-full ${statusColor} text-white">
+          ${statusText}
+        </span>
+      </div>
+      
+      <!-- 内容区 -->
+      <div class="p-6">
+        <div class="space-y-4">
+          <!-- 基本信息 -->
+          <div class="bg-gray-50 rounded-xl p-4 border border-gray-200">
+            <h4 class="text-sm font-semibold text-gray-700 mb-3 flex items-center">
+              <svg class="w-4 h-4 mr-2 text-[#7367f0]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+              </svg>
+              基本信息
+            </h4>
+            <div class="grid grid-cols-2 gap-3 text-sm">
+              <div>
+                <span class="text-gray-500">隧道名称:</span>
+                <p class="font-mono text-gray-900 mt-1">${tunnel.Tunnel_name}</p>
+              </div>
+              <div>
+                <span class="text-gray-500">协议类型:</span>
+                <p class="font-mono text-gray-900 mt-1 uppercase">${tunnel.use_agreement}</p>
+              </div>
+              <div>
+                <span class="text-gray-500">创建时间:</span>
+                <p class="text-gray-900 mt-1">${createTime}</p>
+              </div>
+              <div>
+                <span class="text-gray-500">最近使用:</span>
+                <p class="text-gray-900 mt-1">${recentUseTime}</p>
+              </div>
+              <div>
+                <span class="text-gray-500">隧道状态:</span>
+                <p class="text-gray-900 mt-1">${isOnline ? '在线运行' : '离线'}</p>
+              </div>
+              <div>
+                <span class="text-gray-500">速度限制:</span>
+                <p class="text-gray-900 mt-1">${tunnel.node_speed} Mbps</p>
+              </div>
+            </div>
+          </div>
+          
+          <!-- 连接信息 -->
+          <div class="bg-blue-50 rounded-xl p-4 border border-blue-200">
+            <h4 class="text-sm font-semibold text-blue-900 mb-3 flex items-center">
+              <svg class="w-4 h-4 mr-2 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+              </svg>
+              连接信息
+            </h4>
+            <div class="space-y-3 text-sm">
+              <div>
+                <span class="text-blue-700">本地地址:</span>
+                <p class="font-mono text-blue-900 mt-1 bg-white px-3 py-2 rounded-lg">${tunnel.Local_ip}:${tunnel.Local_port}</p>
+              </div>
+              <div>
+                <span class="text-blue-700">连接地址:</span>
+                <p class="font-mono text-blue-900 mt-1 bg-white px-3 py-2 rounded-lg">${tunnel.node_ip}:${tunnel.return_port}</p>
+              </div>
+              ${tunnel.domain_name ? `
+              <div>
+                <span class="text-blue-700">域名地址:</span>
+                <p class="font-mono text-blue-900 mt-1 bg-white px-3 py-2 rounded-lg">${tunnel.domain_name}</p>
+              </div>
+              ` : ''}
+            </div>
+          </div>
+          
+          <!-- 节点信息 -->
+          <div class="bg-purple-50 rounded-xl p-4 border border-purple-200">
+            <h4 class="text-sm font-semibold text-purple-900 mb-3 flex items-center">
+              <svg class="w-4 h-4 mr-2 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2m-2-4h.01M17 16h.01"></path>
+              </svg>
+              节点信息
+            </h4>
+            <div class="grid grid-cols-2 gap-3 text-sm">
+              <div class="col-span-2">
+                <span class="text-purple-700">节点名称:</span>
+                <p class="text-purple-900 mt-1">${nodeName}</p>
+              </div>
+              <div>
+                <span class="text-purple-700">节点IP:</span>
+                <p class="font-mono text-purple-900 mt-1">${tunnel.node_ip}</p>
+              </div>
+              <div>
+                <span class="text-purple-700">远程端口:</span>
+                <p class="font-mono text-purple-900 mt-1">${tunnel.return_port}</p>
+              </div>
+              ${tunnel.port_range ? `
+              <div class="col-span-2">
+                <span class="text-purple-700">端口范围:</span>
+                <p class="font-mono text-purple-900 mt-1">${tunnel.port_range}</p>
+              </div>
+              ` : ''}
+            </div>
+          </div>
+          
+          <!-- 流量信息 -->
+          <div class="bg-green-50 rounded-xl p-4 border border-green-200">
+            <h4 class="text-sm font-semibold text-green-900 mb-3 flex items-center">
+              <svg class="w-4 h-4 mr-2 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+              </svg>
+              流量信息
+            </h4>
+            <div class="grid grid-cols-2 gap-3 text-sm">
+              <div>
+                <span class="text-green-700">流量模式:</span>
+                <p class="text-green-900 mt-1">${tunnel.tunnel_traffic_mode === 'users' ? '用户流量' : '隧道流量'}</p>
+              </div>
+              <div>
+                <span class="text-green-700">已用流量:</span>
+                <p class="text-green-900 mt-1">${formatTraffic(tunnel.tunnel_traffic)}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- 按钮区 -->
+      <div class="px-6 pb-6">
+        <button data-action="close" 
+                class="w-full bg-gradient-to-r from-[#7367f0] to-[#5f5bd8] hover:from-[#5f5bd8] hover:to-[#4c46d8] text-white px-6 py-3 rounded-xl font-medium transition-all duration-200 shadow-lg shadow-[#7367f0]/30">
+          关闭
+        </button>
+      </div>
+    </div>
+  `
+  document.body.appendChild(modal)
+  
+  // 关闭按钮
+  modal.querySelector('[data-action="close"]').addEventListener('click', () => {
+    modal.remove()
+  })
+  
+  // 点击背景关闭
+  modal.addEventListener('click', (e) => {
+    if (e.target === modal) {
+      modal.remove()
+    }
+  })
+  
+  // ESC键关闭
+  const handleEsc = (e) => {
+    if (e.key === 'Escape') {
+      modal.remove()
+      document.removeEventListener('keydown', handleEsc)
+    }
+  }
+  document.addEventListener('keydown', handleEsc)
 }
 
 onMounted(() => {

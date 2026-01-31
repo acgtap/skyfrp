@@ -43,23 +43,41 @@
               <span>{{ tunnel.Local_ip }}:{{ tunnel.Local_port }}</span>
             </div>
             <div class="flex justify-between">
-              <span>远程端口:</span>
-              <span>{{ tunnel.return_port }}</span>
+              <span>连接地址:</span>
+              <span>{{ tunnel.node_ip }}:{{ tunnel.return_port }}</span>
             </div>
             <div class="flex justify-between">
               <span>协议:</span>
               <span>{{ tunnel.use_agreement }}</span>
             </div>
-            <div class="flex justify-between">
-              <span>节点:</span>
-              <span>{{ tunnel.node_ip }}</span>
-            </div>
           </div>
           
           <button @click="getConfig(tunnel.Tunnel_name)"
-                  :disabled="configLoading === tunnel.Tunnel_name"
-                  class="w-full bg-[#7367f0] hover:bg-[#5f5bd8] disabled:bg-gray-400 text-white py-2 px-4 rounded-lg font-medium transition-colors">
-            {{ configLoading === tunnel.Tunnel_name ? '获取中...' : '获取配置文件' }}
+                  :disabled="configLoading === tunnel.Tunnel_name || configSuccess === tunnel.Tunnel_name"
+                  class="w-full text-white py-2 px-4 rounded-lg font-medium transition-all duration-300 flex items-center justify-center space-x-2"
+                  :class="{
+                    'bg-[#7367f0] hover:bg-[#5f5bd8]': configLoading !== tunnel.Tunnel_name && configSuccess !== tunnel.Tunnel_name,
+                    'bg-gray-400 cursor-not-allowed': configLoading === tunnel.Tunnel_name,
+                    'bg-green-500': configSuccess === tunnel.Tunnel_name
+                  }">
+            <!-- 加载中图标 -->
+            <svg v-if="configLoading === tunnel.Tunnel_name" class="animate-spin h-5 w-5" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            <!-- 成功图标 -->
+            <svg v-else-if="configSuccess === tunnel.Tunnel_name" class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+            </svg>
+            <!-- 默认图标 -->
+            <svg v-else class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+            </svg>
+            <span>
+              {{ configLoading === tunnel.Tunnel_name ? '获取中...' : 
+                 configSuccess === tunnel.Tunnel_name ? '获取成功' : 
+                 '获取配置文件' }}
+            </span>
           </button>
         </div>
       </div>
@@ -111,14 +129,20 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
 import { userStore } from '../stores/user'
 import { tunnelAPI } from '../api'
 import DashboardLayout from '../components/DashboardLayout.vue'
+import { showSuccess, showError } from '../utils/modal'
+
+const router = useRouter()
+const route = useRoute()
 
 // 状态管理
 const loading = ref(true)
 const tunnels = ref([])
 const configLoading = ref(null)
+const configSuccess = ref(null) // 新增：成功状态
 const currentConfig = ref('')
 const currentConfigName = ref('')
 
@@ -164,24 +188,43 @@ const getConfig = async (tunnelName) => {
         currentConfig.value = response.config
         currentConfigName.value = tunnelName
         console.log('配置文件获取成功')
+        
+        // 显示成功状态
+        configLoading.value = null
+        configSuccess.value = tunnelName
+        
+        // 1.5秒后恢复按钮状态
+        setTimeout(() => {
+          configSuccess.value = null
+        }, 1500)
       } else if (response.data && response.data.config) {
         // 兼容API文档中的格式
         currentConfig.value = response.data.config
         currentConfigName.value = tunnelName
         console.log('配置文件获取成功（data格式）')
+        
+        // 显示成功状态
+        configLoading.value = null
+        configSuccess.value = tunnelName
+        
+        // 1.5秒后恢复按钮状态
+        setTimeout(() => {
+          configSuccess.value = null
+        }, 1500)
       } else {
         console.error('API响应中没有配置数据:', response)
-        alert('获取配置文件失败：后端返回数据格式错误')
+        configLoading.value = null
+        showError('获取配置文件失败：后端返回数据格式错误', '获取失败')
       }
     } else {
       console.error('获取配置文件失败:', response.msg)
-      alert(response.msg || '获取配置文件失败')
+      configLoading.value = null
+      showError(response.msg || '获取配置文件失败', '获取失败')
     }
   } catch (error) {
     console.error('获取配置文件异常:', error)
-    alert('获取配置文件失败，请稍后重试')
-  } finally {
     configLoading.value = null
+    showError('获取配置失败，请稍后重试', '获取失败')
   }
 }
 
@@ -189,10 +232,10 @@ const getConfig = async (tunnelName) => {
 const copyConfig = async () => {
   try {
     await navigator.clipboard.writeText(currentConfig.value)
-    alert('配置文件已复制到剪贴板')
+    showSuccess('配置文件已复制到剪贴板', '复制成功')
   } catch (error) {
     console.error('复制失败:', error)
-    alert('复制失败，请手动复制')
+    showError('复制失败，请手动复制', '复制失败')
   }
 }
 
@@ -209,7 +252,24 @@ const downloadConfig = () => {
   URL.revokeObjectURL(url)
 }
 
-onMounted(() => {
-  loadTunnels()
+onMounted(async () => {
+  await loadTunnels()
+  
+  // 检查是否有路由参数指定的隧道
+  const tunnelName = route.query.tunnel
+  if (tunnelName) {
+    console.log('检测到路由参数，自动获取隧道配置:', tunnelName)
+    // 等待隧道列表加载完成后，自动获取配置
+    const tunnel = tunnels.value.find(t => t.Tunnel_name === tunnelName)
+    if (tunnel) {
+      // 延迟一下，确保页面渲染完成
+      setTimeout(() => {
+        getConfig(tunnelName)
+      }, 300)
+    } else {
+      console.warn('未找到指定的隧道:', tunnelName)
+      showError('未找到指定的隧道', '错误')
+    }
+  }
 })
 </script>
