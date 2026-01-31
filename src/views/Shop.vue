@@ -71,7 +71,7 @@
                     </div>
                     <div class="flex justify-between items-center p-3 bg-[#7367f0]/10 rounded-lg">
                       <span class="text-gray-600">速度限制:</span>
-                      <span class="font-semibold text-[#7367f0]">{{ product.speed }} Mbps</span>
+                      <span class="font-semibold text-[#7367f0]">{{ product.speed >= 1024 ? '不限速' : product.speed + ' Mbps' }}</span>
                     </div>
                     <div class="flex justify-between items-center p-3 bg-purple-50 rounded-lg">
                       <span class="text-gray-600">赠送流量:</span>

@@ -478,7 +478,7 @@ const showTunnelDetail = (tunnel) => {
               </div>
               <div>
                 <span class="text-gray-500">速度限制:</span>
-                <p class="text-gray-900 mt-1">${tunnel.node_speed} Mbps</p>
+                <p class="text-gray-900 mt-1">${tunnel.node_speed >= 1024 ? '不限速' : tunnel.node_speed + ' Mbps'}</p>
               </div>
             </div>
           </div>

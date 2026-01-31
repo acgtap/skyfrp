@@ -7,11 +7,6 @@
         <p class="text-gray-600 mt-1">查看可用的服务器节点</p>
       </div>
 
-      <!-- 加载状态 -->
-      <div v-if="loading" class="flex justify-center items-center py-12">
-        <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-[#7367f0]"></div>
-      </div>
-
       <!-- 重要提示 -->
       <div v-if="notice && notice.length > 0" class="bg-blue-50 border border-blue-200 rounded-lg p-4">
         <div class="flex items-start space-x-3">
@@ -27,12 +22,12 @@
             </ul>
           </div>
         </div>
-      </div>
+        </div>
 
-      <!-- 节点列表 -->
-      <div v-if="!loading" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        <div v-for="node in nodes" :key="node.ip" 
-             class="bg-white rounded-lg border border-gray-200 p-6 hover:shadow-lg transition-shadow">
+        <!-- 节点列表 -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div v-for="node in nodes" :key="node.ip" 
+               class="bg-white rounded-lg border border-gray-200 p-6 hover:shadow-lg transition-shadow">
           <div class="flex justify-between items-start mb-4">
             <div>
               <h3 class="text-lg font-semibold text-gray-900">{{ node.node_name }}</h3>
@@ -85,7 +80,7 @@
                 {{ node.node_line }}
               </span>
               <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                {{ node.node_speed }}Mbps
+                {{ node.node_speed >= 1024 ? '不限速' : node.node_speed + 'Mbps' }}
               </span>
               <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
                 {{ node.tunnel_type }}
@@ -104,19 +99,20 @@
                 <span class="text-xs text-yellow-800">仅限 {{ node.user_group }} 用户组使用</span>
               </div>
             </div>
+            </div>
           </div>
         </div>
-      </div>
 
-      <!-- 空状态 -->
-      <div v-if="!loading && nodes.length === 0" class="text-center py-12">
+        <!-- 空状态 -->
+        <div v-if="nodes.length === 0" class="text-center py-12">
         <div class="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
           <svg class="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2m-2-4h.01M17 16h.01"></path>
           </svg>
         </div>
         <h3 class="text-xl font-semibold text-gray-900 mb-2">暂无可用节点</h3>
-        <p class="text-gray-600">请稍后再试或联系管理员</p>
+          <p class="text-gray-600">请稍后再试或联系管理员</p>
+        </div>
       </div>
     </div>
   </DashboardLayout>
@@ -153,4 +149,3 @@ const loadNodes = async () => {
 onMounted(() => {
   loadNodes()
 })
-</script>

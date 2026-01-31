@@ -160,7 +160,7 @@
               <!-- 下拉菜单 - hover显示 -->
               <div class="absolute right-0 mt-2 w-64 bg-white rounded-xl shadow-xl border border-gray-100 py-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
                 <div class="px-4 py-3 border-b border-gray-100">
-                  <div class="flex items-center space-x-3">
+                  <div class="flex items-center space-x-3 mb-2">
                     <img :src="userStore.userInfo.users_faceimg || '/default-avatar.png'" 
                          :alt="userStore.userInfo.users_name || '用户'"
                          class="w-12 h-12 rounded-full ring-2 ring-[#7367f0]/20"
@@ -169,6 +169,23 @@
                       <p class="font-semibold text-gray-900 truncate">{{ userStore.userInfo.users_name || '用户' }}</p>
                       <p class="text-xs text-gray-500">ID: {{ userStore.userInfo.id }}</p>
                     </div>
+                  </div>
+                  <!-- 标签 -->
+                  <div class="flex flex-wrap gap-2 mt-2">
+                    <span class="px-2 py-1 bg-gradient-to-r from-[#7367f0] to-[#5f5bd8] text-white text-xs rounded-full font-medium">
+                      {{ userStore.userInfo.user_group_name || '普通用户' }}
+                    </span>
+                    <span v-if="isCertified" 
+                          class="px-2 py-1 bg-gradient-to-r from-green-500 to-emerald-500 text-white text-xs rounded-full font-medium flex items-center">
+                      <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                      </svg>
+                      已实名
+                    </span>
+                    <span v-else 
+                          class="px-2 py-1 bg-gray-200 text-gray-600 text-xs rounded-full font-medium">
+                      未实名
+                    </span>
                   </div>
                 </div>
                 <button @click="handleLogout" 
@@ -200,6 +217,7 @@
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { userStore } from '../stores/user'
+import { certificationAPI } from '../api'
 
 const router = useRouter()
 
@@ -212,11 +230,28 @@ const serviceMenuOpen = ref(localStorage.getItem('serviceMenuOpen') === 'true')
 const signInLoading = ref(false)
 const hasSignedToday = ref(false)
 
+// 实名认证状态
+const isCertified = ref(false)
+
 // 检查今日是否已签到
 const checkSignInStatus = () => {
   const lastSignInDate = localStorage.getItem('lastSignInDate')
   const today = new Date().toDateString()
   hasSignedToday.value = lastSignInDate === today
+}
+
+// 检查实名认证状态
+const checkCertificationStatus = async () => {
+  try {
+    const response = await certificationAPI.getCertificationInfo(userStore.tempKey)
+    if (response.code === 0 && response.data) {
+      isCertified.value = response.data.is_certified && response.data.real_name_status === 'true'
+    }
+  } catch (error) {
+    console.error('获取认证状态失败:', error)
+    // 如果接口失败，从用户信息判断
+    isCertified.value = userStore.userInfo.real_name === 'true' || userStore.userInfo.real_name === true
+  }
 }
 
 // 切换侧边栏
@@ -531,6 +566,9 @@ onMounted(() => {
   
   // 检查签到状态
   checkSignInStatus()
+  
+  // 检查实名认证状态
+  checkCertificationStatus()
 })
 </script>
 

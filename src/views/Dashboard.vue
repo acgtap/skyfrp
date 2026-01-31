@@ -1,13 +1,14 @@
 <template>
   <DashboardLayout>
-    <!-- 页面标题 -->
-    <div class="mb-6">
-      <h1 class="text-2xl text-black">总览</h1>
-      <p class="text-gray-600 mt-1">查看您的隧道统计和系统通知</p>
-    </div>
+    <div>
+      <!-- 页面标题 -->
+      <div class="mb-6">
+        <h1 class="text-2xl text-black">总览</h1>
+        <p class="text-gray-600 mt-1">查看您的隧道统计和系统通知</p>
+      </div>
 
-    <!-- 统计卡片 - 简约淡紫色背景 -->
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+      <!-- 统计卡片 - 简约淡紫色背景 -->
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
       <div class="bg-[#e8e6f5] rounded-xl p-6 hover:shadow-md transition-all">
         <p class="text-gray-600 text-base mb-3">隧道数量</p>
         <div class="flex items-center justify-between">
@@ -66,11 +67,11 @@
       </div>
     </div>
 
-    <!-- 下方内容区域 -->
-    <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
-      <!-- 左侧：系统通知 -->
-      <div class="lg:col-span-1">
-        <div class="bg-white rounded-xl border border-gray-200 p-6 h-full">
+      <!-- 下方内容区域 -->
+      <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+        <!-- 左侧：系统通知 -->
+        <div class="lg:col-span-1">
+          <div class="bg-white rounded-xl border border-gray-200 p-6 h-full">
           <h3 class="text-lg text-black mb-4 flex items-center">
             <svg class="w-5 h-5 text-[#7367f0] mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path>
@@ -87,9 +88,9 @@
         </div>
       </div>
 
-      <!-- 右侧：交流群和介绍 -->
-      <div class="lg:col-span-3 space-y-6">
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <!-- 右侧：交流群、介绍和时间信息 -->
+        <div class="lg:col-span-3 space-y-6">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div class="bg-white rounded-xl border border-gray-200 p-6">
             <h3 class="text-lg text-black mb-4">交流群</h3>
             <div class="flex items-center space-x-4 p-4 bg-gray-50 rounded-xl border border-gray-200">
@@ -120,6 +121,30 @@
                 <div class="text-2xl text-black">24/7</div>
                 <div class="text-sm text-gray-600">技术支持</div>
               </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 时间信息 -->
+        <div class="bg-white rounded-xl border border-gray-200 p-5 shadow-sm">
+          <h2 class="text-lg font-bold text-black mb-4 flex items-center">
+            <svg class="w-5 h-5 text-[#7367f0] mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+            时间信息
+          </h2>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+              <span class="text-sm text-gray-600">注册时间</span>
+              <span class="text-sm text-gray-900">{{ userStore.userInfo.register_time || '未知' }}</span>
+            </div>
+            <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+              <span class="text-sm text-gray-600">最近登录</span>
+              <span class="text-sm text-gray-900">{{ userStore.userInfo.recent_login || '暂无记录' }}</span>
+            </div>
+            <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+              <span class="text-sm text-gray-600">会员到期</span>
+              <span class="text-sm text-gray-900">{{ userStore.userInfo.end_time || '未开通' }}</span>
             </div>
           </div>
         </div>
@@ -222,10 +247,12 @@ const joinQQGroup = () => {
 }
 
 onMounted(() => {
-  // 加载数据
-  loadTunnelStats()
+  // 并行加载所有数据
+  Promise.all([
+    loadTunnelStats(),
+    loadNotifications()
+  ])
   loadTodayStats()
-  loadNotifications()
   
   // 定时刷新统计数据（每30秒）
   setInterval(() => {
