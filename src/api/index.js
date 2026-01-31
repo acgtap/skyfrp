@@ -25,13 +25,16 @@ api.interceptors.request.use(
     console.log('API请求配置:', config)
     
     // 如果是POST请求且数据是对象，转换为URLSearchParams（form-data格式）
+    // 但如果已经指定了Content-Type为application/json，则保持JSON格式
     if (config.method === 'post' && config.data && typeof config.data === 'object') {
-      const params = new URLSearchParams()
-      Object.keys(config.data).forEach(key => {
-        params.append(key, config.data[key])
-      })
-      config.data = params
-      config.headers['Content-Type'] = 'application/x-www-form-urlencoded'
+      if (config.headers['Content-Type'] !== 'application/json') {
+        const params = new URLSearchParams()
+        Object.keys(config.data).forEach(key => {
+          params.append(key, config.data[key])
+        })
+        config.data = params
+        config.headers['Content-Type'] = 'application/x-www-form-urlencoded'
+      }
     }
     return config
   },
@@ -96,12 +99,25 @@ export const userAPI = {
     })
   },
   
-  // 绑定邮箱
-  bindEmail: (userTempKey, userEmail) => {
-    return api.post('/api/bind_email', {
-      user_temp_key: userTempKey,
-      user_email: userEmail
+  // 发送邮箱验证码
+  sendEmailCode: (email, userTempKey) => {
+    return api.get('/api/send_email_code', {
+      params: {
+        email: email,
+        user_temp_key: userTempKey
+      }
     })
+  },
+  
+  // 验证邮箱验证码
+  verifyEmailCode: (code, usersId, usersUid = null) => {
+    const params = { code }
+    if (usersId) {
+      params.users_id = usersId
+    } else if (usersUid) {
+      params.users_uid = usersUid
+    }
+    return api.get('/api/verify_email_code', { params })
   },
   
   // 更新用户数据
@@ -191,6 +207,46 @@ export const healthAPI = {
   // 健康检查
   checkHealth: () => {
     return api.get('/api/health')
+  }
+}
+
+// 实名认证相关API
+export const certificationAPI = {
+  // 初始化实名认证
+  initCertification: (userTempKey, realname, idcard, certType = 'person') => {
+    return api.post('/api/certification/init', {
+      user_temp_key: userTempKey,
+      realname: realname,
+      idcard: idcard,
+      cert_type: certType
+    }, {
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    })
+  },
+  
+  // 查询认证状态
+  queryCertificationStatus: (userTempKey, certifyId) => {
+    return api.post('/api/certification/status', {
+      user_temp_key: userTempKey,
+      certify_id: certifyId
+    }, {
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    })
+  },
+  
+  // 获取认证信息
+  getCertificationInfo: (userTempKey) => {
+    return api.post('/api/certification/info', {
+      user_temp_key: userTempKey
+    }, {
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    })
   }
 }
 

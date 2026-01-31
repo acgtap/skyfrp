@@ -4,9 +4,9 @@ HTTP服务器接口调用文档
 基础信息
 --------
 基础URL: https://mskapi.cnwbhw.com/
-QQ登录回调地址: https://csmsk.cnwbhw.com/auth/qq-callback
-请求格式: form-data（表单数据）
-响应格式: JSON（部分接口返回重定向）
+服务器地址: 43.242.193.146:8080
+请求格式: form-data（表单数据）或 JSON（部分接口）
+响应格式: JSON（统一格式）
 字符编码: UTF-8
 
 通用响应格式
@@ -22,421 +22,214 @@ QQ登录回调地址: https://csmsk.cnwbhw.com/auth/qq-callback
 -----------
 0: 成功
 -1: 服务器错误或通用错误
--2: 临时密钥无效
+-2: 临时密钥无效或过期
 -3: 数据库查询失败
--4: 隧道数据获取失败
--7: 权限不足（非VIP用户访问VIP节点）
+-4: 验证信息不存在或已过期
+-7: 验证码已过期
 -8: 用户被封禁
--9: QQ登录失败
+-10: 验证码错误
 
-接口列表
---------
+接口列表（共26个接口）
+---------------------
+
 
 
 5. 卡密验证接口
 接口地址: /api/wyzz_kami_key
 请求方法: POST
+请求格式: form-data
 请求参数:
   users_id: integer, 必填, 用户ID（整数）
   kami_data: string, 必填, 卡密数据
-说明: 根据卡密类型返回不同的成功消息
 卡密类型:
-- member: 会员卡密 - 返回会员到期时间
-- amount: 余额卡密 - 返回充值金额
-- traffic_users: 流量卡密 - 返回增加的流量
+  member: 会员卡密 - 返回会员到期时间
+  amount: 余额卡密 - 返回充值金额
+  traffic_users: 流量卡密 - 返回增加的流量
 
-6. 绑定邮箱接口
-接口地址: /api/bind_email
-请求方法: POST
-请求参数:
-  user_temp_key: string, 必填, 临时密钥
-  user_email: string, 必填, 邮箱地址
-响应数据:
-  {
-    "code": 0,
-    "msg": "验证码已发送到邮箱，请查收",
-    "timestamp": "2024-01-01T12:00:00"
-  }
-说明: 仅支持QQ邮箱或网易邮箱
-
-7. 更新用户全部数据接口
+6. 更新用户全部数据接口
 接口地址: /api/reboot_users_data
 请求方法: POST
+请求格式: form-data
 请求参数:
   user_temp_key: string, 必填, 临时密钥
-响应数据:
-  {
-    "code": 0,
-    "msg": "更新成功",
-    "timestamp": "2024-01-01T12:00:00",
-    "data": {
-      "users_id": 1,
-      "users_uid": "用户UID",
-      "user_group": "用户组",
-      "users_email": "用户邮箱",
-      "users_traffic": 可用流量,
-      "total_traffic": 总流量,
-      "traffic_used": 已使用流量,
-      "user_group_name": "用户组名称",
-      "user_money": "用户余额",
-      "users_name": "用户名"
-    }
-  }
 
-8. 获取FRP节点配置接口
+7. 获取FRP节点配置接口
 接口地址: /api/get_frp_node_config
 请求方法: POST
+请求格式: form-data
 请求参数:
   user_temp_key: string, 必填, 临时密钥
   user_tunnel: string, 必填, 隧道名称
-响应数据:
-  {
-    "code": 0,
-    "msg": "配置获取成功",
-    "timestamp": "2024-01-01T12:00:00",
-    "config": "FRP配置内容"
-  }
-说明: 配置内容直接在config字段中，不在data对象里
 
-9. 删除FRP隧道接口
+8. 删除FRP隧道接口
 接口地址: /api/delete_frp_tunnel
 请求方法: POST
+请求格式: form-data
 请求参数:
   user_temp_key: string, 必填, 临时密钥
   tunnel_name: string, 必填, 隧道名称
-说明: 返回操作结果
 
-10. 创建FRP隧道接口
+9. 创建FRP隧道接口
 接口地址: /api/create_frp_tunnel
 请求方法: POST
+请求格式: form-data
 请求参数:
   user_temp_key: string, 必填, 临时密钥
   Tunnel_name: string, 必填, 隧道名称
   Local_ip: string, 必填, 本地IP地址
   Local_port: string, 必填, 本地端口
   node_ip: string, 必填, 节点IP地址
-  use_agreement: string, 必填, 使用协议
-  return_port: string, 必填, 返回端口
-  serverName: string, 可选, 服务器名称（可为空）
-  secretKey: string, 可选, 密钥（可为空）
-说明: 返回操作结果
+  use_agreement: string, 必填, 使用协议（tcp/http/https）
+  return_port: string, 必填, 远程端口
+  serverName: string, 可选, 服务器名称（HTTP/HTTPS协议时需要）
+  secretKey: string, 可选, 密钥（HTTP/HTTPS协议时需要）
 
-11. 获取用户隧道列表接口
+10. 获取用户隧道列表接口
 接口地址: /api/get_frp_tunnel_list
 请求方法: POST
+请求格式: form-data
 请求参数:
   user_temp_key: string, 必填, 临时密钥
-响应数据:
-  {
-    "code": 0,
-    "msg": "获取隧道列表成功",
-    "timestamp": "2024-01-01T12:00:00",
-    "data": {
-      "tunnels": [
-        {
-          "Tunnel_name": "隧道名称",
-          "Local_ip": "本地IP",
-          "Local_port": 本地端口,
-          "node_ip": "节点IP",
-          "use_agreement": "协议类型",
-          "return_port": 远程端口,
-          "tunnel_state": "隧道状态"
-        }
-      ]
-    }
-  }
 
-12. 获取用户所有数据接口
+11. 获取用户所有数据接口
 接口地址: /api/get_users_all_data
 请求方法: POST
+请求格式: form-data
 请求参数:
   user_temp_key: string, 必填, 临时密钥
-响应数据:
- {
-    "code": 0,
-    "msg": "获取用户数据成功",
-    "timestamp": "2026-01-28T17:06:51.376308",
-    "data": {
-        "id": 5761,
-        "users_uid": "A4F2900D933F330B64800B23A486C80E",
-        "user_group": "default",
-        "user_group_name": "普通用户",
-        "user_money": 0.0,
-        "users_name": "樱花下的小猫",
-        "users_email": "",
-        "users_faceimg": "https://thirdqq.qlogo.cn/ek_qqapp/AQO9ZAPFOqeyz37UiczTia1ErmvO6mUe8yvF6FDZuIica0DNPkNKnhnbryTfBj5ia2whfK8GXXkBbmkUmic14cCSFZuyib9YFJxZ4aQJoYxQNaMGpPibCReL2g/100",
-        "node_speed": 5,
-        "register_time": "2026-01-26 20:52:57",
-        "recent_login": "",
-        "temp_key_time": "2026-01-28 17:06:39",
-        "opening_time": "",
-        "end_time": "",
-        "users_traffic": 10240,
-        "traffic_packages": [
-            {
-                "id": 11778,
-                "weight": 2,
-                "traffic_type": "users",
-                "traffic_name": "用户流量",
-                "traffic": 5120,
-                "traffic_used": 0,
-                "opening_time": "2026-01-26 20:52:57",
-                "end_time": "2035-09-30 23:59:59",
-                "traffic_remaining": 5120
-            },
-            {
-                "id": 11779,
-                "weight": 1,
-                "traffic_type": "users",
-                "traffic_name": "每月流量",
-                "traffic": 5120,
-                "traffic_used": 0,
-                "opening_time": "2026-01-01 00:00:00",
-                "end_time": "2026-01-31 23:59:59",
-                "traffic_remaining": 5120
-            }
-        ]
-    }
-}
 
-13. 用户签到接口
+12. 用户签到接口
 接口地址: /api/users_sign_in
 请求方法: POST
+请求格式: form-data
 请求参数:
   user_temp_key: string, 必填, 临时密钥
-响应数据:
-  {
-    "code": 0,
-    "msg": "签到成功",
-    "timestamp": "2024-01-01T12:00:00",
-    "data": {
-      "reward": 签到奖励,
-      "continuous_days": 连续签到天数
-    }
-  }
-说明: 用户每日可签到一次，获得流量奖励
+说明: 用户每日可签到一次，获得随机流量奖励
 
-14. MSKPro模式接口
+13. MSKPro模式接口
 接口地址: /api/mskpro_mode
 请求方法: POST
+请求格式: form-data
 请求参数:
   user_temp_key: string, 必填, 临时密钥
   mode: string, 必填, 模式类型
-响应数据:
-  {
-    "code": 0,
-    "msg": "模式切换成功",
-    "timestamp": "2024-01-01T12:00:00",
-    "data": {
-      "current_mode": "当前模式"
-    }
-  }
-说明: 用于切换MSKPro工作模式
 
-15. 获取QQ登录URL接口
+14. 获取QQ登录URL接口
 接口地址: /api/qq_login_url
 请求方法: GET
 请求参数: 无
-响应数据:
-  {
-    "code": 0,
-    "msg": "获取登录URL成功",
-    "timestamp": "2024-01-01T12:00:00",
-    "data": {
-      "login_url": "https://u.cnwbhw.com/connect.php?act=login&appid=1006&appkey=72bc8f2dc3a127b7abd2761780c51b5f&type=qq&redirect_uri=https://csmsk.cnwbhw.com/auth/qq-callback&state=随机字符串"
-    }
-  }
-说明: 
-- 此接口用于获取QQ登录的跳转URL
-- 生成的URL包含随机的state参数，用于防止CSRF攻击
-- 用户需要跳转到返回的login_url进行QQ授权登录
-- 授权成功后，QQ会重定向到配置的redirect_uri（即/auth/qq-callback）
-- 回调接口会自动处理用户登录/注册，并重定向到前端页面
-- 前端页面应准备好接收users_id和temp_key参数
+说明: 返回QQ登录的跳转URL，用户需要跳转到返回的login_url进行QQ授权登录
 
-16. QQ登录回调接口
+15. QQ登录回调接口
 接口地址: /auth/qq-callback
 请求方法: GET
 请求参数:
   code: string, 必填, QQ返回的授权码
   state: string, 可选, 防止CSRF攻击的状态参数
-处理流程:
-  1. 使用code获取access_token
-  2. 使用access_token获取用户信息（openid）
-  3. 检查用户是否已存在（使用openid作为users_uid）
-  4. 用户存在则登录，不存在则注册
-  5. 重定向到前端页面
-重定向URL:
-  成功: https://csmsk.cnwbhw.com/auth-success?users_id=xxx&temp_key=xxx
-  失败: https://csmsk.cnwbhw.com/login?error=错误类型
-错误类型:
-  missing_code: 缺少授权码参数
-  token_failed: 获取access_token失败
-  auth_failed: 授权失败
-  invalid_response: 响应数据不完整
-  network_error: 网络连接错误
-  user_info_failed: 获取用户信息失败
-  user_info_error: 用户信息错误
-  database_error: 数据库连接失败
-  user_banned: 用户已被封禁
-  create_failed: 用户创建失败
-  server_error: 服务器内部错误
-  system_error: 系统错误
-说明:
-- 此接口是QQ登录的回调接口，由QQ服务器在用户授权后自动调用
-- 处理成功后，会重定向到前端指定的页面，并携带用户ID和临时密钥
-- 使用openid作为用户的唯一标识符（users_uid）
-- 新用户会自动获得5G用户流量和5G每月流量
-- 流量有效期至2035-09-30 23:59:59
+  type: string, 可选, 登录类型，默认为qq
+  redirect: string, 可选, 设置为1时重定向到前端页面
+说明: 使用openid作为用户的唯一标识符（users_uid），新用户自动注册
 
-17. 通用代理接口
+16. 通用代理接口
 接口地址: /api/proxy
 请求方法: GET
 请求参数:
   url: string, 必填, 目标URL地址
-  其他参数: any, 可选, 其他任意参数，将作为查询参数传递给目标URL
-响应数据: 返回目标URL的响应内容（可能是JSON、文本或其他格式）
-说明: 
-- 此接口用于代理请求其他URL，解决跨域问题
-- 目标URL必须符合域名白名单规则（目前支持 *.cnwbhw.com）
-- 支持传递任意查询参数到目标URL
-- 返回目标URL的原始响应内容
+  其他参数: any, 可选, 其他任意参数，将传递给目标URL
+说明: 仅支持白名单域名（*.cnwbhw.com）
 
-18. 获取FRP节点列表接口
+17. 获取FRP节点列表接口
 接口地址: /api/get_frp_nodes
 请求方法: GET
 请求参数:
   users_id: integer, 必填, 用户ID（整数）
   json: string, 可选, 设置为1时返回JSON格式，否则返回文本格式
   nocolor: string, 可选, 设置为1时禁用文本格式的颜色代码
-JSON格式响应数据:
-  {
-    "code": 0,
-    "msg": "获取节点列表成功",
-    "timestamp": "2024-01-01T12:00:00",
-    "data": {
-      "notice": [
-        "重要提示：会员用户请使用BGP线路的节点",
-        "不想成为会员可以创建个人节点也是BGP线路无限速",
-        "QQ交流群：572658815【有问题请联系管理员】"
-      ],
-      "nodes": [
-        {
-          "user_group": "用户组",
-          "node_name": "节点名称",
-          "node_region": "地区",
-          "country_id": "国家代码",
-          "node_describe": "节点描述",
-          "node_speed": 10,
-          "node_line": "线路",
-          "weight": 100,
-          "node_type": "节点类型",
-          "tunnel_type": "隧道类型",
-          "use_people": 50,
-          "node_domain": "域名",
-          "ip": "IP地址",
-          "port": 7000,
-          "port_range": "3000-65535",
-          "online": true
-        }
-      ]
-    }
-  }
-说明: 
-- 支持JSON和文本两种输出格式
-- 文本格式包含ANSI颜色代码，适合命令行工具使用
-- 自动清理过期的person类型节点
-- 检查节点在线状态（端口7000连接测试）
-- 节点信息包含完整的数据库字段，包括节点描述（node_describe）和国家代码（country_id）
-- 节点排序：默认用户组优先，然后按权重降序排列
-- 节点类型包括'msk'和'person'两种，person类型节点会自动检查有效期
+说明: 支持JSON和文本两种输出格式，文本格式适合命令行工具使用
 
-19. 获取商店商品列表接口
+18. 获取商店商品列表接口
 接口地址: /api/get_shop_list
 请求方法: GET/POST
 请求参数: 无
-响应数据:
-  {
-    "code": 0,
-    "msg": "获取商品列表成功",
-    "timestamp": "2024-01-01T12:00:00",
-    "data": {
-      "products": [
-        {
-          "id": 1,
-          "product_type": "商品类型",
-          "display_name": "显示名称",
-          "price": 价格,
-          "is_available": true,
-          "stock_display": "库存显示"
-        }
-      ],
-      "summary": {
-        "total": 总商品数,
-        "member": 会员商品数,
-        "traffic": 流量商品数,
-        "other": 其他商品数
-      }
-    }
-  }
-商品类型说明:
-- member: 会员商品，包含days(天数)、speed(速度)、traffic(流量)字段
-- traffic: 流量包商品，包含traffic(流量)字段
-- 其他类型：其他商品类型
 
-20. 余额购买商品接口
+19. 余额购买商品接口
 接口地址: /api/shop_purchase
 请求方法: POST
+请求格式: form-data
 请求参数:
   user_temp_key: string, 必填, 临时密钥
   product_id: integer, 必填, 商品ID
-响应数据:
-  {
-    "code": 0,
-    "msg": "购买成功",
-    "timestamp": "2024-01-01T12:00:00",
-    "data": {
-      "product_name": "购买的商品名称",
-      "remaining_balance": 剩余余额
-    }
-  }
-说明: 
-- 使用用户余额购买商品
-- 需要验证用户余额是否充足
-- 验证商品库存是否足够
-- 成功购买后更新用户余额和商品库存
 
-21. 健康检查接口
+20. 发送邮箱验证码接口
+接口地址: /api/send_email_code
+请求方法: GET
+请求参数:
+  email: string, 必填, 邮箱地址
+  user_temp_key: string, 必填, 临时密钥
+说明: 仅支持QQ邮箱和网易邮箱，验证码有效期为10分钟
+
+21. 验证邮箱验证码接口
+接口地址: /api/verify_email_code
+请求方法: GET
+请求参数:
+  code: string, 必填, 验证码
+  users_id: string, 可选, 用户ID（优先使用）
+  users_uid: string, 可选, 用户UID（users_id未提供时使用）
+说明: 验证码最多尝试5次，验证成功后验证码立即失效
+
+22. 实名认证初始化接口
+接口地址: /api/certification/init
+请求方法: POST
+请求格式: JSON
+请求参数:
+  user_temp_key: string, 必填, 临时密钥
+  realname: string, 必填, 真实姓名
+  idcard: string, 必填, 身份证号码（15或18位）
+  cert_type: string, 可选, 认证类型：person/company，默认person
+
+23. 查询认证状态接口
+接口地址: /api/certification/status
+请求方法: POST
+请求格式: JSON
+请求参数:
+  user_temp_key: string, 必填, 临时密钥
+  certify_id: string, 必填, 认证ID
+
+24. 获取认证信息接口
+接口地址: /api/certification/info
+请求方法: POST
+请求格式: JSON
+请求参数:
+  user_temp_key: string, 必填, 临时密钥
+
+25. 隧道流量查询接口
+接口地址: /api/traffic/query
+请求方法: POST
+请求格式: JSON
+请求参数:
+  user_temp_key: string, 必填, 临时密钥
+  tunnel_name: string, 可选, 单个隧道名称（与tunnel_names二选一）
+  tunnel_names: array, 可选, 多个隧道名称数组（与tunnel_name二选一）
+  date_range: string, 可选, 时间范围：today(今天) 或 7days(最近7天)
+说明: 不传隧道相关参数时，默认查询全部隧道
+
+26. 健康检查接口
 接口地址: /api/health
 请求方法: GET
 请求参数: 无
-响应数据:
-  {
-    "code": 0,
-    "msg": "服务正常",
-    "timestamp": "2024-01-01T12:00:00"
-  }
-说明: 用于检查服务器是否正常运行
 
 注意事项
 --------
-- 部分接口有IP白名单限制，仅允许特定IP访问
-- 部分接口有频率限制，频繁请求可能会被禁止
-- 请求参数中，除特殊说明外，均为必填
-- 响应中的code为0表示成功，非0表示失败，具体错误信息见msg
-- 所有POST接口均使用form-data格式提交数据
-- 获取FRP节点列表接口支持GET请求，参数通过URL查询字符串传递
-- 节点信息包含国家代码（country_id），例如'cn'表示中国
-- QQ登录URL接口返回的链接包含随机state参数，用于安全验证
-- QQ登录功能需要用户授权，授权后会自动重定向到回调接口
-- QQ登录回调接口会自动创建新用户或登录已有用户
-- QQ用户的唯一标识是openid，系统使用openid作为users_uid
-- QQ登录成功后，前端需要从URL参数中获取users_id和temp_key
-- QQ登录流程：获取登录URL → 用户授权 → 回调接口处理 → 重定向到前端
-- 通用代理接口仅支持白名单域名（*.cnwbhw.com）
-- 健康检查接口可用于监控服务状态
-- 大部分接口现在使用用户ID（users_id）作为用户标识符，而不是用户UID（users_uid）
-- 注册接口仍然使用users_uid，因为注册时还没有生成用户ID
-- 商店商品列表接口返回简化的商品信息，会员商品包含天数、速度、流量等详细信息
-- 余额购买商品接口需要验证用户余额和商品库存，购买成功后更新用户余额
-- 商店商品支持多种类型：会员、流量包等，可根据product_type字段区分
+1. 所有POST接口（除特别说明外）均使用form-data格式提交数据
+2. 实名认证相关接口使用JSON格式提交数据
+3. 部分接口有IP白名单限制（如用户注册接口）
+4. 所有接口都有频率限制，频繁请求可能会被暂时禁止
+5. 临时密钥（temp_key）是用户身份验证的重要凭证，请妥善保管
+6. QQ登录使用第三方服务，回调地址为 http://43.242.193.146:8080/auth/qq-callback
+7. 新用户注册后自动获得5G用户流量（长期有效）和5G每月流量
+8. 邮箱验证码存储在内存中，服务器重启后失效
+9. 验证码有效期为10分钟，最多尝试5次
+10. 通用代理接口仅支持白名单域名（*.cnwbhw.com）
+
+文档版本: 2025-12-11
+基于实际代码实现，包含26个接口

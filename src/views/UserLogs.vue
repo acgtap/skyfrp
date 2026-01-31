@@ -56,6 +56,11 @@
                     class="bg-white hover:bg-gray-50 text-gray-700 px-6 py-2 rounded-lg text-sm font-medium border border-gray-300 transition-colors">
               重置
             </button>
+            
+            <button @click="deleteAllLogs" 
+                    class="bg-red-500 hover:bg-red-600 text-white px-6 py-2 rounded-lg text-sm font-medium transition-colors ml-auto">
+              删除所有日志
+            </button>
           </div>
         </div>
 
@@ -381,6 +386,122 @@ const deleteLog = (logId) => {
       }
     } catch (error) {
       console.error('删除日志失败:', error)
+    }
+  })
+  
+  // 取消按钮
+  modal.querySelector('[data-action="cancel"]').addEventListener('click', () => {
+    modal.remove()
+  })
+  
+  // 点击背景关闭
+  modal.addEventListener('click', (e) => {
+    if (e.target === modal) {
+      modal.remove()
+    }
+  })
+  
+  // ESC键关闭
+  const handleEsc = (e) => {
+    if (e.key === 'Escape') {
+      modal.remove()
+      document.removeEventListener('keydown', handleEsc)
+    }
+  }
+  document.addEventListener('keydown', handleEsc)
+}
+
+// 删除所有日志
+const deleteAllLogs = () => {
+  // 创建确认弹窗
+  const modal = document.createElement('div')
+  modal.className = 'fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4'
+  modal.innerHTML = `
+    <div class="bg-white rounded-2xl w-full max-w-md shadow-2xl border border-gray-100 overflow-hidden animate-in fade-in zoom-in duration-200">
+      <!-- 内容区 -->
+      <div class="p-6">
+        <!-- 图标 -->
+        <div class="flex justify-center mb-4">
+          <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center">
+            <svg class="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+            </svg>
+          </div>
+        </div>
+        
+        <!-- 标题 -->
+        <h3 class="text-xl font-bold text-gray-900 text-center mb-3">确认删除所有日志</h3>
+        
+        <!-- 消息 -->
+        <p class="text-gray-600 text-center leading-relaxed mb-6">确定要删除所有日志记录吗？此操作将清空所有历史记录且无法撤销。</p>
+      </div>
+      
+      <!-- 按钮区 -->
+      <div class="px-6 pb-6 flex space-x-3">
+        <button data-action="cancel" 
+                class="flex-1 bg-white hover:bg-gray-50 text-gray-700 px-6 py-3 rounded-xl font-medium border-2 border-gray-200 transition-all duration-200">
+          取消
+        </button>
+        <button data-action="confirm" 
+                class="flex-1 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white px-6 py-3 rounded-xl font-medium transition-all duration-200 shadow-lg shadow-red-500/30">
+          确定删除
+        </button>
+      </div>
+    </div>
+  `
+  document.body.appendChild(modal)
+  
+  // 确认按钮
+  modal.querySelector('[data-action="confirm"]').addEventListener('click', () => {
+    modal.remove()
+    
+    try {
+      // 清空localStorage中的日志
+      localStorage.removeItem('userLogs')
+      // 重新加载日志
+      loadLogs()
+      
+      // 显示成功提示
+      const successModal = document.createElement('div')
+      successModal.className = 'fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4'
+      successModal.innerHTML = `
+        <div class="bg-white rounded-2xl w-full max-w-md shadow-2xl border border-gray-100 overflow-hidden animate-in fade-in zoom-in duration-200">
+          <div class="p-6">
+            <div class="flex justify-center mb-4">
+              <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center">
+                <svg class="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                </svg>
+              </div>
+            </div>
+            <h3 class="text-xl font-bold text-gray-900 text-center mb-3">删除成功</h3>
+            <p class="text-gray-600 text-center leading-relaxed mb-6">所有日志记录已清空</p>
+          </div>
+          <div class="px-6 pb-6">
+            <button data-action="close" 
+                    class="w-full bg-gradient-to-r from-[#7367f0] to-[#5f5bd8] hover:from-[#5f5bd8] hover:to-[#4c46d8] text-white px-6 py-3 rounded-xl font-medium transition-all duration-200 shadow-lg">
+              确定
+            </button>
+          </div>
+        </div>
+      `
+      document.body.appendChild(successModal)
+      
+      successModal.querySelector('[data-action="close"]').addEventListener('click', () => {
+        successModal.remove()
+      })
+      
+      successModal.addEventListener('click', (e) => {
+        if (e.target === successModal) {
+          successModal.remove()
+        }
+      })
+      
+      setTimeout(() => {
+        successModal.remove()
+      }, 2000)
+    } catch (error) {
+      console.error('删除所有日志失败:', error)
     }
   })
   
