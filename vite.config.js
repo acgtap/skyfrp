@@ -21,6 +21,15 @@ export default defineConfig({
         headers: {
           'Origin': 'https://mskapi.cnwbhw.com'
         }
+      },
+      '/notice': {
+        target: 'https://msk.cnwbhw.com',
+        changeOrigin: true,
+        secure: true,
+        rewrite: (path) => path.replace(/^\/notice/, '/service/Notice'),
+        headers: {
+          'Origin': 'https://msk.cnwbhw.com'
+        }
       }
     }
   }

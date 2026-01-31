@@ -287,34 +287,41 @@
     </footer>
 
     <!-- 登录加载界面 -->
-    <div v-if="showLoginProgress" class="fixed inset-0 z-50">
+    <div v-if="showLoginProgress" class="fixed inset-0 z-50" style="animation: fadeIn 0.3s ease-out">
       <!-- 灰色模糊背景 -->
-      <div class="absolute inset-0 bg-gray-400 backdrop-blur-md"></div>
+      <div class="absolute inset-0 bg-gray-900/80 backdrop-blur-md"></div>
       
       <!-- 登录进度内容 -->
       <div class="relative flex items-center justify-center min-h-screen">
-        <div class="bg-white rounded-lg shadow-xl p-8 max-w-md w-full mx-4">
+        <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full mx-4" style="animation: modalContentIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1)">
           <div class="text-center">
-            <!-- 加载图标 -->
-            <div class="w-16 h-16 bg-[#7367f0] rounded-full flex items-center justify-center mx-auto mb-6">
-              <svg class="animate-spin w-8 h-8 text-white" fill="none" viewBox="0 0 24 24">
-                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-              </svg>
+            <!-- 加载图标 - 带脉冲效果 -->
+            <div class="relative w-20 h-20 mx-auto mb-6">
+              <div class="absolute inset-0 bg-[#7367f0] rounded-full opacity-20" style="animation: pulse 1.5s ease-in-out infinite"></div>
+              <div class="relative w-20 h-20 bg-gradient-to-br from-[#7367f0] to-[#5f5bd8] rounded-full flex items-center justify-center shadow-lg">
+                <svg class="animate-spin w-10 h-10 text-white" fill="none" viewBox="0 0 24 24">
+                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+              </div>
             </div>
             
             <!-- 标题 -->
-            <h2 class="text-2xl font-bold text-black mb-2">正在登录管理面板</h2>
-            <p class="text-gray-600 mb-6">{{ loginProgressText }}</p>
+            <h2 class="text-2xl font-bold text-gray-900 mb-2">正在登录管理面板</h2>
+            <p class="text-gray-600 mb-6 min-h-[24px]">{{ loginProgressText }}</p>
             
-            <!-- 进度条 -->
-            <div class="w-full bg-gray-200 rounded-full h-3 mb-4">
-              <div class="bg-[#7367f0] h-3 rounded-full transition-all duration-500 ease-out" 
-                   :style="{ width: loginProgress + '%' }"></div>
+            <!-- 进度条 - 带动画 -->
+            <div class="w-full bg-gray-200 rounded-full h-3 mb-4 overflow-hidden">
+              <div class="bg-gradient-to-r from-[#7367f0] to-[#5f5bd8] h-3 rounded-full transition-all duration-500 ease-out shadow-lg" 
+                   :style="{ width: loginProgress + '%' }">
+                <div class="h-full w-full animate-shimmer"></div>
+              </div>
             </div>
             
             <!-- 百分比 -->
-            <div class="text-2xl font-bold text-[#7367f0] mb-2">{{ loginProgress }}%</div>
+            <div class="text-3xl font-bold bg-gradient-to-r from-[#7367f0] to-[#5f5bd8] bg-clip-text text-transparent mb-2">
+              {{ loginProgress }}%
+            </div>
             
             <!-- 当前步骤 -->
             <div class="text-sm text-gray-500">{{ currentStep }}</div>

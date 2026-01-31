@@ -1,6 +1,6 @@
 <template>
   <DashboardLayout>
-    <div class="max-w-6xl mx-auto space-y-8">
+    <div class="space-y-8">
       <!-- 页面标题 -->
       <div>
         <h1 class="text-2xl font-bold text-gray-900">软件下载</h1>
@@ -114,7 +114,7 @@
           <div class="border border-gray-200 rounded-lg p-6">
             <h3 class="text-lg font-semibold text-gray-900 mb-3">快速入门</h3>
             <p class="text-sm text-gray-600 mb-4">从零开始学习如何使用SkyFRP</p>
-            <button class="w-full bg-[#7367f0] hover:bg-[#5f5bd8] text-white py-2 px-4 rounded-lg text-sm font-medium transition-colors">
+            <button @click="goToHelp('quick-start')" class="w-full bg-[#7367f0] hover:bg-[#5f5bd8] text-white py-2 px-4 rounded-lg text-sm font-medium transition-colors">
               查看教程
             </button>
           </div>
@@ -122,7 +122,7 @@
           <div class="border border-gray-200 rounded-lg p-6">
             <h3 class="text-lg font-semibold text-gray-900 mb-3">配置指南</h3>
             <p class="text-sm text-gray-600 mb-4">详细的配置文件说明和示例</p>
-            <button class="w-full bg-[#7367f0] hover:bg-[#5f5bd8] text-white py-2 px-4 rounded-lg text-sm font-medium transition-colors">
+            <button @click="goToHelp('tunnel-config')" class="w-full bg-[#7367f0] hover:bg-[#5f5bd8] text-white py-2 px-4 rounded-lg text-sm font-medium transition-colors">
               查看指南
             </button>
           </div>
@@ -130,7 +130,7 @@
           <div class="border border-gray-200 rounded-lg p-6">
             <h3 class="text-lg font-semibold text-gray-900 mb-3">常见问题</h3>
             <p class="text-sm text-gray-600 mb-4">解决使用过程中的常见问题</p>
-            <button class="w-full bg-[#7367f0] hover:bg-[#5f5bd8] text-white py-2 px-4 rounded-lg text-sm font-medium transition-colors">
+            <button @click="goToHelp('faq')" class="w-full bg-[#7367f0] hover:bg-[#5f5bd8] text-white py-2 px-4 rounded-lg text-sm font-medium transition-colors">
               查看FAQ
             </button>
           </div>
@@ -164,5 +164,16 @@
 </template>
 
 <script setup>
+import { useRouter } from 'vue-router'
 import DashboardLayout from '../components/DashboardLayout.vue'
+
+const router = useRouter()
+
+// 跳转到帮助文档的指定章节
+const goToHelp = (sectionId) => {
+  router.push({
+    path: '/help',
+    hash: `#${sectionId}`
+  })
+}
 </script>

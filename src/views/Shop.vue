@@ -15,16 +15,38 @@
         </div>
 
         <!-- 商品列表 -->
-        <div v-if="loading" class="flex justify-center py-12">
-          <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-[#7367f0]"></div>
+        <!-- 骨架屏加载 -->
+        <div v-if="loading" class="space-y-6">
+          <!-- 会员商品骨架屏 -->
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div v-for="i in 4" :key="'skeleton-member-' + i" 
+                 class="bg-white rounded-xl border border-gray-200 p-6 animate-pulse">
+              <div class="mb-6">
+                <div class="flex items-center justify-between mb-4">
+                  <div class="h-6 bg-gray-200 rounded w-32"></div>
+                  <div class="h-6 bg-gray-200 rounded-full w-16"></div>
+                </div>
+                <div class="space-y-3">
+                  <div class="h-12 bg-gray-100 rounded-lg"></div>
+                  <div class="h-12 bg-gray-100 rounded-lg"></div>
+                  <div class="h-12 bg-gray-100 rounded-lg"></div>
+                </div>
+              </div>
+              <div class="space-y-4">
+                <div class="h-16 bg-gray-100 rounded-lg"></div>
+                <div class="h-12 bg-gray-200 rounded-lg"></div>
+              </div>
+            </div>
+          </div>
         </div>
 
         <div v-else class="space-y-6">
           <!-- 会员服务商品 -->
           <div v-if="memberProducts.length > 0">
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-              <div v-for="product in memberProducts" :key="product.id" 
-                   class="bg-white rounded-xl border border-gray-200 p-6 h-fit shadow-sm hover:shadow-lg transition-all duration-300 relative">
+              <div v-for="(product, index) in memberProducts" :key="product.id" 
+                   class="bg-white rounded-xl border border-gray-200 p-6 h-fit shadow-sm hover:shadow-lg transition-all duration-300 relative animate-fade-in"
+                   :style="{ animationDelay: `${index * 30}ms` }">
                 
                 <!-- 推荐标签 - 贴纸样式 -->
                 <div v-if="product.display_name.includes('永久会员')" 
@@ -92,8 +114,9 @@
           <!-- 流量包商品 -->
           <div v-if="trafficProducts.length > 0">
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-              <div v-for="product in trafficProducts" :key="product.id" 
-                   class="bg-white rounded-xl border border-gray-200 p-6 h-fit shadow-sm hover:shadow-lg transition-all duration-300 relative">
+              <div v-for="(product, index) in trafficProducts" :key="product.id" 
+                   class="bg-white rounded-xl border border-gray-200 p-6 h-fit shadow-sm hover:shadow-lg transition-all duration-300 relative animate-fade-in"
+                   :style="{ animationDelay: `${index * 30}ms` }">
                 
                 <!-- 推荐标签 - 贴纸样式 -->
                 <div v-if="product.display_name.includes('20G') || product.display_name.includes('20g')" 
@@ -213,6 +236,17 @@ const loading = ref(true)
 const products = ref([])
 const purchasing = ref(null)
 
+// 检查是否有缓存的商品数据
+const cachedProducts = sessionStorage.getItem('shop_products')
+if (cachedProducts) {
+  try {
+    products.value = JSON.parse(cachedProducts)
+    loading.value = false
+  } catch (e) {
+    console.error('解析缓存商品数据失败:', e)
+  }
+}
+
 // 分离会员商品和流量商品
 const memberProducts = computed(() => {
   return products.value.filter(product => product.product_type === 'member')
@@ -240,6 +274,9 @@ const loadProducts = async () => {
     const response = await shopAPI.getShopList()
     if (response.code === 0) {
       products.value = response.data.products || []
+      // 缓存商品数据到 sessionStorage，5分钟有效
+      sessionStorage.setItem('shop_products', JSON.stringify(products.value))
+      sessionStorage.setItem('shop_products_time', Date.now().toString())
     }
   } catch (error) {
     console.error('加载商品列表失败:', error)
@@ -411,6 +448,14 @@ const purchaseProduct = async (product) => {
 }
 
 onMounted(() => {
-  loadProducts()
+  // 检查缓存是否过期（5分钟）
+  const cacheTime = sessionStorage.getItem('shop_products_time')
+  const now = Date.now()
+  const cacheExpired = !cacheTime || (now - parseInt(cacheTime)) > 5 * 60 * 1000
+  
+  // 如果缓存过期或没有缓存，重新加载
+  if (cacheExpired || products.value.length === 0) {
+    loadProducts()
+  }
 })
 </script>
