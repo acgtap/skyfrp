@@ -22,12 +22,12 @@
             </ul>
           </div>
         </div>
-        </div>
+      </div>
 
-        <!-- 节点列表 -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          <div v-for="node in nodes" :key="node.ip" 
-               class="bg-white rounded-lg border border-gray-200 p-6 hover:shadow-lg transition-shadow">
+      <!-- 节点列表 -->
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div v-for="node in nodes" :key="node.ip" 
+             class="bg-white rounded-lg border border-gray-200 p-6 hover:shadow-lg transition-shadow">
           <div class="flex justify-between items-start mb-4">
             <div>
               <h3 class="text-lg font-semibold text-gray-900">{{ node.node_name }}</h3>
@@ -99,7 +99,6 @@
                 <span class="text-xs text-yellow-800">仅限 {{ node.user_group }} 用户组使用</span>
               </div>
             </div>
-            </div>
           </div>
         </div>
 
@@ -149,3 +148,4 @@ const loadNodes = async () => {
 onMounted(() => {
   loadNodes()
 })
+</script>

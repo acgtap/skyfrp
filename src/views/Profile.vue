@@ -103,8 +103,8 @@
             </div>
 
             <!-- 邮箱绑定 -->
-            <div class="bg-white rounded-xl border border-gray-200 p-5 shadow-sm">
-              <h2 class="text-lg font-bold text-black mb-4 flex items-center">
+            <div class="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
+              <h2 class="text-lg font-bold text-black mb-5 flex items-center">
                 <svg class="w-5 h-5 text-[#7367f0] mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
                 </svg>
@@ -125,80 +125,65 @@
                 </div>
               </div>
               
-              <div v-else class="space-y-3">
-                <!-- 如果已发送验证码，显示验证码输入框 -->
-                <div v-if="emailCodeSent">
-                  <div class="mb-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
-                    <div class="flex items-start space-x-3">
-                      <svg class="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path>
-                      </svg>
-                      <div class="flex-1">
-                        <p class="text-sm text-blue-800 font-medium">验证码已发送</p>
-                        <p class="text-xs text-blue-600 mt-1">验证码已发送到 {{ email }}，请查收邮件</p>
-                      </div>
+              <div v-else class="space-y-4">
+                <!-- 验证码已发送提示 -->
+                <div v-if="emailCodeSent" class="p-4 bg-blue-50 rounded-lg border border-blue-200">
+                  <div class="flex items-start space-x-3">
+                    <svg class="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                      <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path>
+                    </svg>
+                    <div class="flex-1">
+                      <p class="text-sm text-blue-800 font-medium">验证码已发送</p>
+                      <p class="text-xs text-blue-600 mt-1">验证码已发送到 {{ email }}，请查收邮件</p>
                     </div>
                   </div>
-                  
-                  <div>
-                    <label class="block text-sm text-gray-600 mb-2">验证码</label>
+                </div>
+                
+                <!-- 邮箱输入框 -->
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-2">邮箱地址</label>
+                  <input v-model="email" 
+                         type="email" 
+                         placeholder="请输入邮箱地址（仅支持QQ邮箱或网易邮箱）"
+                         :disabled="emailCodeSent"
+                         class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#7367f0] focus:border-transparent transition-all disabled:bg-gray-100 disabled:cursor-not-allowed">
+                </div>
+                
+                <!-- 验证码输入框 - 始终显示 -->
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-2">验证码</label>
+                  <div class="flex space-x-3">
                     <input v-model="verificationCode" 
                            type="text" 
                            placeholder="请输入6位验证码"
                            maxlength="6"
-                           class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#7367f0] focus:border-transparent transition-all">
-                  </div>
-                  
-                  <div class="flex space-x-3">
-                    <button @click="handleVerifyCode" 
-                            :disabled="verifyLoading || !verificationCode"
-                            class="flex-1 bg-gradient-to-r from-[#7367f0] to-[#5f5bd8] hover:from-[#5f5bd8] hover:to-[#4c46d8] disabled:from-gray-400 disabled:to-gray-500 text-white px-6 py-3 rounded-lg font-medium transition-all duration-300 transform hover:scale-105 shadow-lg">
-                      {{ verifyLoading ? '验证中...' : '验证并绑定' }}
-                    </button>
-                    <button @click="cancelEmailBinding" 
-                            class="px-6 py-3 bg-white border-2 border-gray-300 text-gray-700 rounded-lg font-medium hover:bg-gray-50 transition-all">
-                      取消
+                           :disabled="!emailCodeSent"
+                           class="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#7367f0] focus:border-transparent transition-all disabled:bg-gray-100 disabled:cursor-not-allowed">
+                    <button @click="handleBindEmail" 
+                            :disabled="bindLoading || !email || !email.trim() || emailCodeSent"
+                            class="px-6 py-3 bg-gradient-to-r from-[#7367f0] to-[#5f5bd8] hover:from-[#5f5bd8] hover:to-[#4c46d8] disabled:from-gray-400 disabled:to-gray-500 disabled:cursor-not-allowed text-white rounded-lg font-medium transition-all whitespace-nowrap">
+                      {{ bindLoading ? '发送中...' : emailCodeSent ? '已发送' : '发送验证码' }}
                     </button>
                   </div>
-                  
-                  <p class="text-xs text-gray-500 flex items-start space-x-1">
-                    <svg class="w-4 h-4 text-gray-400 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                    </svg>
-                    <span>验证码有效期10分钟，最多可尝试5次</span>
-                  </p>
                 </div>
                 
-                <!-- 未发送验证码，显示邮箱输入框 -->
-                <div v-else>
-                  <div>
-                    <input v-model="email" 
-                           type="email" 
-                           placeholder="请输入邮箱地址（仅支持QQ邮箱或网易邮箱）"
-                           class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#7367f0] focus:border-transparent transition-all">
-                  </div>
-                  <div class="relative group">
-                    <button @click="handleBindEmail" 
-                            :disabled="bindLoading"
-                            class="w-full bg-gradient-to-r from-[#7367f0] to-[#5f5bd8] hover:from-[#5f5bd8] hover:to-[#4c46d8] disabled:from-gray-400 disabled:to-gray-500 text-white px-6 py-3 rounded-lg font-medium transition-all duration-300 transform hover:scale-105 shadow-lg">
-                      {{ bindLoading ? '发送中...' : '发送验证码' }}
-                    </button>
-                    <!-- 未输入邮箱提示 -->
-                    <div v-if="!email" 
-                         class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-4 py-3 bg-gray-900 text-white text-sm rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap shadow-xl z-10">
-                      <div class="flex items-center space-x-2">
-                        <svg class="w-4 h-4 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
-                        </svg>
-                        <span>请输入邮箱地址</span>
-                      </div>
-                      <!-- 小箭头 -->
-                      <div class="absolute top-full left-1/2 transform -translate-x-1/2 -mt-1">
-                        <div class="border-4 border-transparent border-t-gray-900"></div>
-                      </div>
-                    </div>
-                  </div>
-                  <p class="text-xs text-gray-500 flex items-start space-x-1">
+                <!-- 操作按钮 -->
+                <div class="flex space-x-3 pt-2">
+                  <button @click="handleVerifyCode" 
+                          :disabled="verifyLoading || !verificationCode || verificationCode.length !== 6"
+                          class="flex-1 bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 disabled:from-gray-400 disabled:to-gray-500 disabled:cursor-not-allowed text-white px-6 py-3 rounded-lg font-medium transition-all shadow-md">
+                    {{ verifyLoading ? '验证中...' : '验证并绑定' }}
+                  </button>
+                  <button v-if="emailCodeSent" 
+                          @click="cancelEmailBinding" 
+                          class="px-6 py-3 bg-white border-2 border-gray-300 text-gray-700 rounded-lg font-medium hover:bg-gray-50 transition-all">
+                    重置
+                  </button>
+                </div>
+                
+                <!-- 提示信息 -->
+                <div class="p-3 bg-gray-50 rounded-lg border border-gray-200">
+                  <p class="text-xs text-gray-600 flex items-start space-x-2">
                     <svg class="w-4 h-4 text-gray-400 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                     </svg>
@@ -431,7 +416,9 @@ const formatTraffic = (traffic) => {
 
 // 绑定邮箱（发送验证码）
 const handleBindEmail = async () => {
+  // 检查邮箱是否为空
   if (!email.value || !email.value.trim()) {
+    showWarning('请输入邮箱地址')
     return
   }
   

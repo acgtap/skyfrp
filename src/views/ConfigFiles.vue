@@ -117,7 +117,6 @@
             <span class="text-[#7367f0] font-bold">4.</span>
             <span>如需帮助请访问帮助文档或联系客服QQ群：572658815</span>
           </div>
-          </div>
         </div>
       </div>
     </div>
