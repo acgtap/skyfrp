@@ -2,6 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 
 // 导入页面组件
 import LandingPage from '../views/LandingPage.vue'
+import Login from '../views/Login.vue'
 import QQCallback from '../views/QQCallback.vue'
 import Dashboard from '../views/Dashboard.vue'
 import Profile from '../views/Profile.vue'
@@ -21,6 +22,11 @@ const routes = [
     path: '/',
     name: 'Landing',
     component: LandingPage
+  },
+  {
+    path: '/login',
+    name: 'Login',
+    component: Login
   },
   {
     path: '/qq-callback',
@@ -109,7 +115,7 @@ router.beforeEach((to, from, next) => {
   const isAuthenticated = localStorage.getItem('temp_key') && localStorage.getItem('users_id')
   
   if (to.meta.requiresAuth && !isAuthenticated) {
-    next('/')
+    next('/login')
   } else {
     next()
   }

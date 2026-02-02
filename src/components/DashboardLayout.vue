@@ -172,7 +172,8 @@
                   </div>
                   <!-- 标签 -->
                   <div class="flex flex-wrap gap-2 mt-2">
-                    <span class="px-2 py-1 bg-gradient-to-r from-[#7367f0] to-[#5f5bd8] text-white text-xs rounded-full font-medium">
+                    <span class="px-2 py-1 text-white text-xs rounded-full font-medium"
+                          :class="userStore.userInfo.user_group !== 'default' ? 'bg-amber-500' : 'bg-gradient-to-r from-[#7367f0] to-[#5f5bd8]'">
                       {{ userStore.userInfo.user_group_name || '普通用户' }}
                     </span>
                     <span v-if="isCertified" 

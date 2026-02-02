@@ -11,7 +11,8 @@
             <div class="flex-1">
               <h3 class="text-2xl font-bold text-black">{{ userStore.userInfo.users_name || '未设置昵称' }}</h3>
               <div class="flex items-center flex-wrap gap-2 mt-2">
-                <span class="px-3 py-1 bg-gradient-to-r from-[#7367f0] to-[#5f5bd8] text-white text-sm rounded-full font-medium">
+                <span class="px-3 py-1 text-white text-sm rounded-full font-medium"
+                      :class="userStore.userInfo.user_group !== 'default' ? 'bg-amber-500' : 'bg-gradient-to-r from-[#7367f0] to-[#5f5bd8]'">
                   {{ userStore.userInfo.user_group_name || '普通用户' }}
                 </span>
                 <span v-if="certificationStatus === 'verified'" 
