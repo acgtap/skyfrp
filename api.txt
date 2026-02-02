@@ -29,12 +29,55 @@ HTTP服务器接口调用文档
 -8: 用户被封禁
 -10: 验证码错误
 
-接口列表（共26个接口）
+接口列表（共28个接口）
 ---------------------
 
+1. 邮箱注册接口
+接口地址: /api/users_email_register
+请求方法: POST
+请求格式: form-data
+请求参数:
+  users_email: string, 必填, 用户邮箱（仅支持QQ邮箱或网易邮箱）
+  users_login: string, 必填, 用户名（3-20个字符，支持中文、字母、数字、下划线）
+  users_pass: string, 必填, 密码（至少6位）
+  verification_code: string, 必填, 邮箱验证码（6位数字）
+  invitation_id: string, 可选, 邀请ID，可为NULL
+  users_faceimg: string, 可选, 用户头像URL
+  register_ip: string, 可选, 注册IP地址（如果不传则使用客户端IP）
+说明: 需要先发送注册验证码到邮箱（使用发送邮箱注册验证码接口），验证码有效期为10分钟
 
+2. 获取用户临时密钥接口
+接口地址: /api/get_users_key
+请求方法: POST
+请求格式: form-data
+请求参数:
+  users_id: integer, 必填, 用户ID（整数）
 
-5. 卡密验证接口
+3. 重置用户临时密钥接口
+接口地址: /api/reset_users_key
+请求方法: POST
+请求格式: form-data
+请求参数:
+  users_id: integer, 必填, 用户ID（整数）
+  temp_key: string, 必填, 现有临时密钥
+
+4. 临时密钥登录接口
+接口地址: /api/temp_login
+请求方法: POST
+请求格式: form-data
+请求参数:
+  user_temp_key: string, 必填, 临时密钥
+
+5. 邮箱登录接口
+接口地址: /api/email_login
+请求方法: POST
+请求格式: form-data
+请求参数:
+  users_email: string, 必填, 用户邮箱
+  users_pass: string, 必填, 密码
+说明: 使用邮箱和密码进行登录，登录成功后返回临时密钥
+
+6. 卡密验证接口
 接口地址: /api/wyzz_kami_key
 请求方法: POST
 请求格式: form-data
@@ -46,14 +89,14 @@ HTTP服务器接口调用文档
   amount: 余额卡密 - 返回充值金额
   traffic_users: 流量卡密 - 返回增加的流量
 
-6. 更新用户全部数据接口
+7. 更新用户全部数据接口
 接口地址: /api/reboot_users_data
 请求方法: POST
 请求格式: form-data
 请求参数:
   user_temp_key: string, 必填, 临时密钥
 
-7. 获取FRP节点配置接口
+8. 获取FRP节点配置接口
 接口地址: /api/get_frp_node_config
 请求方法: POST
 请求格式: form-data
@@ -61,7 +104,7 @@ HTTP服务器接口调用文档
   user_temp_key: string, 必填, 临时密钥
   user_tunnel: string, 必填, 隧道名称
 
-8. 删除FRP隧道接口
+9. 删除FRP隧道接口
 接口地址: /api/delete_frp_tunnel
 请求方法: POST
 请求格式: form-data
@@ -69,7 +112,7 @@ HTTP服务器接口调用文档
   user_temp_key: string, 必填, 临时密钥
   tunnel_name: string, 必填, 隧道名称
 
-9. 创建FRP隧道接口
+10. 创建FRP隧道接口
 接口地址: /api/create_frp_tunnel
 请求方法: POST
 请求格式: form-data
@@ -84,21 +127,21 @@ HTTP服务器接口调用文档
   serverName: string, 可选, 服务器名称（HTTP/HTTPS协议时需要）
   secretKey: string, 可选, 密钥（HTTP/HTTPS协议时需要）
 
-10. 获取用户隧道列表接口
+11. 获取用户隧道列表接口
 接口地址: /api/get_frp_tunnel_list
 请求方法: POST
 请求格式: form-data
 请求参数:
   user_temp_key: string, 必填, 临时密钥
 
-11. 获取用户所有数据接口
+12. 获取用户所有数据接口
 接口地址: /api/get_users_all_data
 请求方法: POST
 请求格式: form-data
 请求参数:
   user_temp_key: string, 必填, 临时密钥
 
-12. 用户签到接口
+13. 用户签到接口
 接口地址: /api/users_sign_in
 请求方法: POST
 请求格式: form-data
@@ -106,7 +149,7 @@ HTTP服务器接口调用文档
   user_temp_key: string, 必填, 临时密钥
 说明: 用户每日可签到一次，获得随机流量奖励
 
-13. MSKPro模式接口
+14. MSKPro模式接口
 接口地址: /api/mskpro_mode
 请求方法: POST
 请求格式: form-data
@@ -114,13 +157,13 @@ HTTP服务器接口调用文档
   user_temp_key: string, 必填, 临时密钥
   mode: string, 必填, 模式类型
 
-14. 获取QQ登录URL接口
+15. 获取QQ登录URL接口
 接口地址: /api/qq_login_url
 请求方法: GET
 请求参数: 无
 说明: 返回QQ登录的跳转URL，用户需要跳转到返回的login_url进行QQ授权登录
 
-15. QQ登录回调接口
+16. QQ登录回调接口
 接口地址: /auth/qq-callback
 请求方法: GET
 请求参数:
@@ -130,7 +173,7 @@ HTTP服务器接口调用文档
   redirect: string, 可选, 设置为1时重定向到前端页面
 说明: 使用openid作为用户的唯一标识符（users_uid），新用户自动注册
 
-16. 通用代理接口
+17. 通用代理接口
 接口地址: /api/proxy
 请求方法: GET
 请求参数:
@@ -138,7 +181,7 @@ HTTP服务器接口调用文档
   其他参数: any, 可选, 其他任意参数，将传递给目标URL
 说明: 仅支持白名单域名（*.cnwbhw.com）
 
-17. 获取FRP节点列表接口
+18. 获取FRP节点列表接口
 接口地址: /api/get_frp_nodes
 请求方法: GET
 请求参数:
@@ -147,12 +190,12 @@ HTTP服务器接口调用文档
   nocolor: string, 可选, 设置为1时禁用文本格式的颜色代码
 说明: 支持JSON和文本两种输出格式，文本格式适合命令行工具使用
 
-18. 获取商店商品列表接口
+19. 获取商店商品列表接口
 接口地址: /api/get_shop_list
 请求方法: GET/POST
 请求参数: 无
 
-19. 余额购买商品接口
+20. 余额购买商品接口
 接口地址: /api/shop_purchase
 请求方法: POST
 请求格式: form-data
@@ -160,15 +203,23 @@ HTTP服务器接口调用文档
   user_temp_key: string, 必填, 临时密钥
   product_id: integer, 必填, 商品ID
 
-20. 发送邮箱验证码接口
+21. 发送邮箱验证码接口
 接口地址: /api/send_email_code
 请求方法: GET
 请求参数:
   email: string, 必填, 邮箱地址
   user_temp_key: string, 必填, 临时密钥
-说明: 仅支持QQ邮箱和网易邮箱，验证码有效期为10分钟
+说明: 仅支持QQ邮箱和网易邮箱，验证码有效期为10分钟，用于绑定邮箱
 
-21. 验证邮箱验证码接口
+22. 发送邮箱注册验证码接口
+接口地址: /api/send_email_register_code
+请求方法: POST
+请求格式: form-data
+请求参数:
+  users_email: string, 必填, 用户邮箱（仅支持QQ邮箱或网易邮箱）
+说明: 专门用于用户注册时的验证码发送，验证码有效期为10分钟
+
+23. 验证邮箱验证码接口
 接口地址: /api/verify_email_code
 请求方法: GET
 请求参数:
@@ -177,7 +228,7 @@ HTTP服务器接口调用文档
   users_uid: string, 可选, 用户UID（users_id未提供时使用）
 说明: 验证码最多尝试5次，验证成功后验证码立即失效
 
-22. 实名认证初始化接口
+24. 实名认证初始化接口
 接口地址: /api/certification/init
 请求方法: POST
 请求格式: JSON
@@ -187,7 +238,7 @@ HTTP服务器接口调用文档
   idcard: string, 必填, 身份证号码（15或18位）
   cert_type: string, 可选, 认证类型：person/company，默认person
 
-23. 查询认证状态接口
+25. 查询认证状态接口
 接口地址: /api/certification/status
 请求方法: POST
 请求格式: JSON
@@ -195,14 +246,14 @@ HTTP服务器接口调用文档
   user_temp_key: string, 必填, 临时密钥
   certify_id: string, 必填, 认证ID
 
-24. 获取认证信息接口
+26. 获取认证信息接口
 接口地址: /api/certification/info
 请求方法: POST
 请求格式: JSON
 请求参数:
   user_temp_key: string, 必填, 临时密钥
 
-25. 隧道流量查询接口
+27. 隧道流量查询接口
 接口地址: /api/traffic/query
 请求方法: POST
 请求格式: JSON
@@ -213,7 +264,7 @@ HTTP服务器接口调用文档
   date_range: string, 可选, 时间范围：today(今天) 或 7days(最近7天)
 说明: 不传隧道相关参数时，默认查询全部隧道
 
-26. 健康检查接口
+28. 健康检查接口
 接口地址: /api/health
 请求方法: GET
 请求参数: 无
@@ -230,6 +281,8 @@ HTTP服务器接口调用文档
 8. 邮箱验证码存储在内存中，服务器重启后失效
 9. 验证码有效期为10分钟，最多尝试5次
 10. 通用代理接口仅支持白名单域名（*.cnwbhw.com）
+11. 发送邮箱注册验证码接口与发送邮箱验证码接口是分开的，分别用于注册和绑定邮箱
+12. 邮箱登录接口提供另一种登录方式，使用邮箱和密码进行登录
 
-文档版本: 2025-12-11
-基于实际代码实现，包含26个接口
+文档版本: 2026-2-1
+基于实际代码实现，包含28个接口

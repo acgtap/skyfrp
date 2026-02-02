@@ -486,47 +486,8 @@ const handleQQCallback = async (code, state) => {
 }
 
 // 开始登录
-const startLogin = async () => {
-  try {
-    console.log('开始QQ登录流程...')
-    
-    // 根据环境设置回调地址
-    const redirectUri = import.meta.env.DEV 
-      ? 'http://127.0.0.1:5173/' 
-      : 'https://skyfrp.katomegumi.net/'
-    console.log('尝试设置回调地址:', redirectUri)
-    
-    const response = await authAPI.getQQLoginUrl(redirectUri)
-    console.log('获取登录URL响应:', response)
-    
-    if (response.code === 0 && response.data && response.data.login_url) {
-      console.log('跳转到QQ登录页面:', response.data.login_url)
-      
-      // 检查返回的URL中是否包含我们的回调地址
-      if (response.data.login_url.includes('127.0.0.1')) {
-        console.log('后端支持自定义回调地址')
-      } else {
-        console.log('后端使用默认回调地址，需要前端处理')
-      }
-      
-      // 直接跳转到QQ登录页面
-      window.location.href = response.data.login_url
-    } else {
-      console.error('获取登录URL失败:', response.msg || '未知错误')
-      alert('获取登录URL失败: ' + (response.msg || '未知错误'))
-    }
-  } catch (error) {
-    console.error('登录失败:', error)
-    if (error.response) {
-      console.error('错误响应:', error.response.data)
-      alert('登录失败: ' + (error.response.data?.msg || error.message))
-    } else if (error.request) {
-      console.error('网络错误:', error.request)
-      alert('网络连接失败，请检查网络连接')
-    } else {
-      alert('登录失败，请稍后重试')
-    }
-  }
+const startLogin = () => {
+  router.push('/login')
 }
 
 // 打开帮助文档

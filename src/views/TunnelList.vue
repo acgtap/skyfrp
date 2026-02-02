@@ -437,8 +437,8 @@ const showTunnelDetail = (tunnel) => {
   modal.innerHTML = `
     <div class="bg-white rounded-2xl w-full max-w-2xl shadow-2xl border border-gray-100 overflow-hidden animate-in fade-in zoom-in duration-200 max-h-[90vh] overflow-y-auto">
       <!-- 标题栏 -->
-      <div class="bg-gradient-to-r from-[#7367f0] to-[#5f5bd8] px-6 py-4 flex items-center justify-between sticky top-0 z-10">
-        <h3 class="text-xl font-bold text-white">隧道详情</h3>
+      <div class="bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between sticky top-0 z-10">
+        <h3 class="text-xl font-bold text-gray-900">隧道详情</h3>
         <span class="px-3 py-1 text-xs rounded-full ${statusColor} text-white">
           ${statusText}
         </span>

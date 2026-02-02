@@ -29,9 +29,18 @@
         <div v-for="node in nodes" :key="node.ip" 
              class="bg-white rounded-lg border border-gray-200 p-6 hover:shadow-lg transition-shadow">
           <div class="flex justify-between items-start mb-4">
-            <div>
-              <h3 class="text-lg font-semibold text-gray-900">{{ node.node_name }}</h3>
-              <p class="text-sm text-gray-600">{{ node.node_region }}</p>
+            <div class="flex-1">
+              <h3 class="text-lg font-semibold" 
+                  :class="node.user_group !== 'default' ? 'text-amber-500' : 'text-gray-900'">
+                {{ node.node_name }}
+              </h3>
+              <div class="flex items-center gap-2 mt-1 flex-wrap">
+                <p class="text-sm text-gray-600">{{ node.node_region }}</p>
+                <!-- 节点描述作为标签 -->
+                <span v-if="node.node_describe" class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                  {{ node.node_describe }}
+                </span>
+              </div>
             </div>
             <div class="flex items-center space-x-2">
               <!-- 国家标识 -->
@@ -49,28 +58,51 @@
           </div>
           
           <div class="space-y-3">
-            <!-- 节点描述 -->
-            <div v-if="node.node_describe" class="text-sm text-gray-600">
-              {{ node.node_describe }}
-            </div>
             
-            <!-- 节点信息 -->
-            <div class="space-y-2 text-sm">
-              <div class="flex justify-between items-center">
-                <span class="text-gray-600">IP地址:</span>
-                <span class="font-mono text-gray-900">{{ node.ip }}</span>
+            <!-- 节点信息和负载 - 左右布局 -->
+            <div class="flex gap-4 items-center">
+              <!-- 左侧：负载圆圈 -->
+              <div class="flex-shrink-0">
+                <div class="relative w-24 h-24">
+                  <!-- 背景圆 -->
+                  <svg class="w-24 h-24 transform -rotate-90">
+                    <circle cx="48" cy="48" r="40" stroke="currentColor" stroke-width="6" fill="none" class="text-gray-200"></circle>
+                    <!-- 进度圆 -->
+                    <circle cx="48" cy="48" r="40" 
+                            :stroke="getLoadPercentage(node) >= 80 ? '#ef4444' : getLoadPercentage(node) >= 50 ? '#eab308' : '#22c55e'" 
+                            stroke-width="6" 
+                            fill="none"
+                            stroke-linecap="round"
+                            :stroke-dasharray="251.2"
+                            :stroke-dashoffset="251.2 - (251.2 * getLoadPercentage(node) / 100)"
+                            class="transition-all duration-500"></circle>
+                  </svg>
+                  <!-- 中心文字 -->
+                  <div class="absolute inset-0 flex flex-col items-center justify-center">
+                    <span class="text-xl font-bold" :class="getLoadColor(node)">{{ getLoadPercentage(node) }}%</span>
+                    <span class="text-[10px] text-gray-500 mt-0.5">负载</span>
+                  </div>
+                </div>
               </div>
-              <div class="flex justify-between items-center">
-                <span class="text-gray-600">端口:</span>
-                <span class="font-mono text-gray-900">{{ node.port }}</span>
-              </div>
-              <div class="flex justify-between items-center">
-                <span class="text-gray-600">域名:</span>
-                <span class="font-mono text-gray-900">{{ node.node_domain || '无' }}</span>
-              </div>
-              <div class="flex justify-between items-center">
-                <span class="text-gray-600">端口范围:</span>
-                <span class="font-mono text-gray-900">{{ node.port_range }}</span>
+              
+              <!-- 右侧：节点信息 -->
+              <div class="flex-1 space-y-2 text-sm">
+                <div class="flex justify-between items-center">
+                  <span class="text-gray-600">IP地址:</span>
+                  <span class="font-mono text-gray-900">{{ node.ip }}</span>
+                </div>
+                <div class="flex justify-between items-center">
+                  <span class="text-gray-600">端口:</span>
+                  <span class="font-mono text-gray-900">{{ node.port }}</span>
+                </div>
+                <div class="flex justify-between items-center">
+                  <span class="text-gray-600">域名:</span>
+                  <span class="font-mono text-gray-900">{{ node.node_domain || '无' }}</span>
+                </div>
+                <div class="flex justify-between items-center">
+                  <span class="text-gray-600">端口范围:</span>
+                  <span class="font-mono text-gray-900">{{ node.port_range }}</span>
+                </div>
               </div>
             </div>
             
@@ -96,7 +128,7 @@
                 <svg class="w-4 h-4 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
                 </svg>
-                <span class="text-xs text-yellow-800">仅限 {{ node.user_group }} 用户组使用</span>
+                <span class="text-xs font-medium text-yellow-700">仅限 <span class="font-bold">{{ node.user_group }}</span> 用户组使用</span>
               </div>
             </div>
           </div>
@@ -148,4 +180,36 @@ const loadNodes = async () => {
 onMounted(() => {
   loadNodes()
 })
+
+// 计算负载百分比（基于在线人数和节点速度）
+const getLoadPercentage = (node) => {
+  // 如果有直接的带宽数据，使用带宽数据
+  if (node.node_bandwidth && node.used_bandwidth !== undefined) {
+    return Math.round((node.used_bandwidth / node.node_bandwidth) * 100)
+  }
+  
+  // 否则根据在线人数估算
+  // 假设每个隧道占用5M带宽
+  const bandwidthPerTunnel = 5
+  const usedBandwidth = (node.use_people || 0) * bandwidthPerTunnel
+  
+  // 节点速度（Mbps）
+  let totalBandwidth = node.node_speed || 100
+  
+  // 如果是不限速节点（>= 1024），假设总带宽为200M
+  if (totalBandwidth >= 1024) {
+    totalBandwidth = 200
+  }
+  
+  const percentage = Math.round((usedBandwidth / totalBandwidth) * 100)
+  return Math.min(percentage, 100) // 最大100%
+}
+
+// 获取负载颜色
+const getLoadColor = (node) => {
+  const percentage = getLoadPercentage(node)
+  if (percentage >= 80) return 'text-red-600'
+  if (percentage >= 50) return 'text-yellow-600'
+  return 'text-green-600'
+}
 </script>
