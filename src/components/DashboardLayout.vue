@@ -211,11 +211,11 @@
 
       <!-- 页面内容 -->
       <main class="p-6">
-        <transition name="content-fade" mode="out-in">
-          <div :key="$route.path">
-            <slot />
-          </div>
-        </transition>
+        <router-view v-slot="{ Component }">
+          <transition name="content-fade" mode="out-in">
+            <component :is="Component" />
+          </transition>
+        </router-view>
       </main>
     </div>
   </div>

@@ -1,7 +1,6 @@
 <template>
   <div class="min-h-screen bg-[#f8f7fa]">
-    <DashboardLayout>
-      <div class="space-y-6">
+    <div class="space-y-6">
         <!-- 页面标题 -->
         <div>
           <h1 class="text-2xl font-bold text-black">用户日志</h1>
@@ -150,15 +149,13 @@
               <span class="text-sm text-gray-600">页</span>
             </div>
           </div>
-        </div>
       </div>
-    </DashboardLayout>
+    </div>
   </div>
 </template>
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
-import DashboardLayout from '../components/DashboardLayout.vue'
 
 // 状态管理
 const loading = ref(false)

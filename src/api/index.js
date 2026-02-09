@@ -1,4 +1,16 @@
 import axios from 'axios'
+import NProgress from 'nprogress'
+
+// 配置 NProgress（与 App.vue 保持一致）
+NProgress.configure({
+  showSpinner: false,
+  speed: 300,
+  minimum: 0.1,
+  trickleSpeed: 150
+})
+
+// 跟踪正在进行的请求数量
+let activeRequests = 0
 
 // 根据环境判断baseURL
 const getBaseURL = () => {
@@ -22,8 +34,17 @@ const api = axios.create({
 // 请求拦截器
 api.interceptors.request.use(
   config => {
+    // 开始 NProgress 进度条
+    // 开始 NProgress 进度条
+    if (!config.hideLoading) {
+      if (activeRequests === 0) {
+        NProgress.start()
+      }
+      activeRequests++
+    }
+
     console.log('API请求配置:', config)
-    
+
     // 如果是POST请求且数据是对象，转换为URLSearchParams（form-data格式）
     // 但如果已经指定了Content-Type为application/json，则保持JSON格式
     if (config.method === 'post' && config.data && typeof config.data === 'object') {
@@ -43,6 +64,14 @@ api.interceptors.request.use(
     return config
   },
   error => {
+    // 请求错误时也要减少计数并可能结束进度条
+    // 请求错误时也要减少计数并可能结束进度条
+    if (!error.config || !error.config.hideLoading) {
+      activeRequests--
+      if (activeRequests === 0) {
+        NProgress.done()
+      }
+    }
     return Promise.reject(error)
   }
 )
@@ -50,18 +79,34 @@ api.interceptors.request.use(
 // 响应拦截器
 api.interceptors.response.use(
   response => {
+    // 结束 NProgress 进度条
+    if (!response.config.hideLoading) {
+      activeRequests--
+      if (activeRequests === 0) {
+        NProgress.done()
+      }
+    }
+
     console.log('API响应:', response)
     return response.data
   },
   error => {
+    // 结束 NProgress 进度条
+    if (!error.config || !error.config.hideLoading) {
+      activeRequests--
+      if (activeRequests === 0) {
+        NProgress.done()
+      }
+    }
+
     console.error('API请求错误:', error)
     if (error.response) {
       console.error('错误响应数据:', error.response.data)
       console.error('错误状态码:', error.response.status)
-      
+
       // 检查是否是临时密钥失效（根据后端返回的错误码判断）
       if (error.response.data && (
-        error.response.data.code === -1 || 
+        error.response.data.code === -1 ||
         error.response.data.code === -2 ||
         error.response.data.msg?.includes('临时密钥') ||
         error.response.data.msg?.includes('temp_key') ||
@@ -71,14 +116,14 @@ api.interceptors.response.use(
         // 清除本地存储
         localStorage.removeItem('temp_key')
         localStorage.removeItem('users_id')
-        
+
         // 显示提示信息
         if (typeof window !== 'undefined') {
           // 创建提示弹窗
           const alertDiv = document.createElement('div')
-          alertDiv.className = 'fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[9999]'
+          alertDiv.className = 'fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[9999] modal-enter'
           alertDiv.innerHTML = `
-            <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-md mx-4 animate-in fade-in zoom-in duration-200">
+            <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-md mx-4 modal-content-enter">
               <div class="text-center">
                 <div class="w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-4">
                   <svg class="w-8 h-8 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -95,7 +140,7 @@ api.interceptors.response.use(
             </div>
           `
           document.body.appendChild(alertDiv)
-          
+
           // 3秒后自动跳转
           setTimeout(() => {
             alertDiv.remove()
@@ -132,14 +177,14 @@ export const userAPI = {
       user_temp_key: userTempKey
     })
   },
-  
+
   // 用户签到
   userSignIn: (userTempKey) => {
     return api.post('/api/users_sign_in', {
       user_temp_key: userTempKey
     })
   },
-  
+
   // 卡密兑换
   redeemCard: (usersId, kamiData) => {
     return api.post('/api/wyzz_kami_key', {
@@ -147,7 +192,7 @@ export const userAPI = {
       kami_data: kamiData
     })
   },
-  
+
   // 发送邮箱验证码（用于绑定邮箱）
   sendEmailCode: (email, userTempKey) => {
     return api.get('/api/send_email_code', {
@@ -157,14 +202,14 @@ export const userAPI = {
       }
     })
   },
-  
+
   // 发送邮箱注册验证码
   sendEmailRegisterCode: (email) => {
     return api.post('/api/send_email_register_code', {
       users_email: email
     })
   },
-  
+
   // 验证邮箱验证码
   verifyEmailCode: (code, usersId, usersUid = null) => {
     const params = { code }
@@ -175,7 +220,7 @@ export const userAPI = {
     }
     return api.get('/api/verify_email_code', { params })
   },
-  
+
   // 邮箱注册
   emailRegister: (email, username, password, verificationCode, invitationId = null, faceImg = null, registerIp = null) => {
     const data = {
@@ -187,10 +232,10 @@ export const userAPI = {
     if (invitationId) data.invitation_id = invitationId
     if (faceImg) data.users_faceimg = faceImg
     if (registerIp) data.register_ip = registerIp
-    
+
     return api.post('/api/users_email_register', data)
   },
-  
+
   // 邮箱登录
   emailLogin: (email, password) => {
     return api.post('/api/email_login', {
@@ -198,14 +243,14 @@ export const userAPI = {
       users_pass: password
     })
   },
-  
+
   // 更新用户数据
   rebootUserData: (userTempKey) => {
     return api.post('/api/reboot_users_data', {
       user_temp_key: userTempKey
     })
   },
-  
+
   // 更新用户资料
   updateProfile: (userTempKey, data) => {
     return api.post('/api/update_profile', {
@@ -218,12 +263,12 @@ export const userAPI = {
 // 隧道相关API
 export const tunnelAPI = {
   // 获取用户隧道列表
-  getTunnelList: (userTempKey) => {
+  getTunnelList: (userTempKey, config = {}) => {
     return api.post('/api/get_frp_tunnel_list', {
       user_temp_key: userTempKey
-    })
+    }, config)
   },
-  
+
   // 创建隧道
   createTunnel: (userTempKey, tunnelData) => {
     return api.post('/api/create_frp_tunnel', {
@@ -231,7 +276,7 @@ export const tunnelAPI = {
       ...tunnelData
     })
   },
-  
+
   // 删除隧道
   deleteTunnel: (userTempKey, tunnelName) => {
     return api.post('/api/delete_frp_tunnel', {
@@ -239,7 +284,7 @@ export const tunnelAPI = {
       tunnel_name: tunnelName
     })
   },
-  
+
   // 获取节点配置
   getNodeConfig: (userTempKey, userTunnel) => {
     return api.post('/api/get_frp_node_config', {
@@ -247,9 +292,9 @@ export const tunnelAPI = {
       user_tunnel: userTunnel
     })
   },
-  
+
   // 查询隧道流量
-  queryTraffic: (userTempKey, params = {}) => {
+  queryTraffic: (userTempKey, params = {}, config = {}) => {
     const requestData = {
       user_temp_key: userTempKey,
       ...params
@@ -258,10 +303,11 @@ export const tunnelAPI = {
     return api.post('/api/traffic/query', requestData, {
       headers: {
         'Content-Type': 'application/json'
-      }
+      },
+      ...config
     })
   },
-  
+
   // 修改隧道信息
   modifyTunnel: (userTempKey, tunnelName, mode, value) => {
     return api.post('/api/modify_tunnel_information', {
@@ -292,7 +338,7 @@ export const shopAPI = {
   getShopList: () => {
     return api.get('/api/get_shop_list')
   },
-  
+
   // 余额购买商品
   purchaseProduct: (userTempKey, productId) => {
     return api.post('/api/shop_purchase', {
@@ -336,7 +382,7 @@ export const certificationAPI = {
       }
     })
   },
-  
+
   // 查询认证状态
   queryCertificationStatus: (userTempKey, certifyId) => {
     return api.post('/api/certification/status', {
@@ -348,7 +394,7 @@ export const certificationAPI = {
       }
     })
   },
-  
+
   // 获取认证信息
   getCertificationInfo: (userTempKey) => {
     return api.post('/api/certification/info', {

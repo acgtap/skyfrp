@@ -1,7 +1,6 @@
 <template>
   <div class="min-h-screen bg-[#f8f7fa]">
-    <DashboardLayout>
-      <div class="space-y-6">
+    <div class="space-y-6">
         <!-- 页面标题 -->
         <div class="flex justify-between items-center">
           <div>
@@ -171,16 +170,14 @@
               </div>
             </div>
           </div>
-        </div>
       </div>
-    </DashboardLayout>
+    </div>
   </div>
 </template>
 
 <script setup>
 import { ref } from 'vue'
 import { userStore } from '../stores/user'
-import DashboardLayout from '../components/DashboardLayout.vue'
 import { showWarning, showSuccess, showError, showInfo } from '../utils/modal'
 import { logUserAction, updateLogStatus, LOG_TYPES, LOG_ACTIONS } from '../utils/logger'
 

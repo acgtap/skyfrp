@@ -1,7 +1,6 @@
 <template>
   <div class="min-h-screen bg-[#f8f7fa]">
-    <DashboardLayout>
-      <div class="space-y-6">
+    <div class="space-y-6">
         <!-- 用户基本信息卡片 -->
         <div class="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
           <div class="flex items-center space-x-6">
@@ -389,10 +388,10 @@
           </div>
         </div>
       </div>
-    </DashboardLayout>
     
     <!-- 编辑资料模态框 -->
-    <div v-if="showEditProfileModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+    <Transition name="modal-zoom">
+      <div v-if="showEditProfileModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
       <div class="bg-white rounded-2xl w-full max-w-md shadow-2xl">
         <div class="p-6">
           <h3 class="text-xl font-bold text-gray-900 mb-6">编辑资料</h3>
@@ -440,7 +439,8 @@
           </form>
         </div>
       </div>
-    </div>
+      </div>
+    </Transition>
   </div>
 </template>
 
@@ -449,7 +449,6 @@ import { ref, onMounted, onUnmounted, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { userStore } from '../stores/user'
 import { userAPI, certificationAPI } from '../api'
-import DashboardLayout from '../components/DashboardLayout.vue'
 import { showSuccess, showError, showWarning } from '../utils/modal'
 
 const router = useRouter()

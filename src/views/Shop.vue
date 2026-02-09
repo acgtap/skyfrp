@@ -1,7 +1,6 @@
 <template>
   <div class="min-h-screen bg-[#f8f7fa]">
-    <DashboardLayout>
-      <div class="space-y-6">
+    <div class="space-y-6">
         <!-- 页面标题 -->
         <div class="flex justify-between items-center mb-4">
           <div>
@@ -214,9 +213,8 @@
               <span>如有问题请联系客服：QQ群 572658815</span>
             </div>
           </div>
-        </div>
       </div>
-    </DashboardLayout>
+    </div>
   </div>
 </template>
 
@@ -225,7 +223,6 @@ import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { userStore } from '../stores/user'
 import { shopAPI } from '../api'
-import DashboardLayout from '../components/DashboardLayout.vue'
 import { showSuccess, showError, showConfirm } from '../utils/modal'
 import { logUserAction, updateLogStatus, LOG_TYPES, LOG_ACTIONS } from '../utils/logger'
 

@@ -39,13 +39,11 @@ export const showModal = (options) => {
 
   // 创建弹窗
   const modal = document.createElement('div')
-  modal.className = 'fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4'
-  modal.style.animation = 'fadeIn 0.2s ease-out'
-  
+  modal.className = 'fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4 modal-enter'
+
   const modalContent = document.createElement('div')
-  modalContent.className = 'bg-white rounded-2xl w-full max-w-md shadow-2xl overflow-hidden'
-  modalContent.style.animation = 'slideUp 0.3s ease-out'
-  
+  modalContent.className = 'bg-white rounded-2xl w-full max-w-md shadow-2xl overflow-hidden modal-content-enter'
+
   modalContent.innerHTML = `
     <div class="p-8">
       <!-- 图标 -->
@@ -78,15 +76,17 @@ export const showModal = (options) => {
       </div>
     </div>
   `
-  
+
   modal.appendChild(modalContent)
 
   document.body.appendChild(modal)
 
   // 关闭弹窗函数
   const closeModal = () => {
-    modal.style.animation = 'fadeOut 0.2s ease-out'
-    modalContent.style.animation = 'slideDown 0.2s ease-out'
+    modal.classList.remove('modal-enter')
+    modal.classList.add('modal-leave')
+    modalContent.classList.remove('modal-content-enter')
+    modalContent.classList.add('modal-content-leave')
     setTimeout(() => {
       modal.remove()
     }, 200)

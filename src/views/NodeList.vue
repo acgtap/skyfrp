@@ -1,5 +1,5 @@
 <template>
-  <DashboardLayout>
+  <div>
     <div class="space-y-6">
       <!-- 页面标题 -->
       <div>
@@ -146,14 +146,13 @@
         </div>
       </div>
     </div>
-  </DashboardLayout>
+  </div>
 </template>
 
 <script setup>
 import { ref, onMounted } from 'vue'
 import { userStore } from '../stores/user'
 import { nodeAPI } from '../api'
-import DashboardLayout from '../components/DashboardLayout.vue'
 
 // 数据
 const nodes = ref([])

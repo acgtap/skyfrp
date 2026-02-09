@@ -7,7 +7,7 @@
   html {
     scroll-behavior: smooth;
   }
-  
+
   body {
     margin: 0;
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
@@ -15,7 +15,7 @@
     -moz-osx-font-smoothing: grayscale;
     background-color: #f8f7fa;
   }
-  
+
   #app {
     min-height: 100vh;
   }
@@ -38,12 +38,12 @@
     border: none;
     cursor: pointer;
   }
-  
+
   .btn-primary:hover {
     background: linear-gradient(to right, #5f5bd8, #4c46d8);
     transform: scale(1.05);
   }
-  
+
   .btn-secondary {
     background-color: white;
     color: #374151;
@@ -58,13 +58,13 @@
     justify-content: center;
     cursor: pointer;
   }
-  
+
   .btn-secondary:hover {
     background-color: #f9fafb;
     border-color: #7367f0;
     box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
   }
-  
+
   .card {
     background-color: rgba(255, 255, 255, 0.8);
     backdrop-filter: blur(8px);
@@ -73,11 +73,11 @@
     box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
     transition: all 0.3s ease;
   }
-  
+
   .card:hover {
     box-shadow: 0 25px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
   }
-  
+
   .input-field {
     width: 100%;
     padding: 0.75rem 1rem;
@@ -86,7 +86,7 @@
     outline: none;
     transition: all 0.2s ease;
   }
-  
+
   .input-field:focus {
     border-color: #7367f0;
     box-shadow: 0 0 0 3px rgba(115, 103, 240, 0.1);
@@ -101,16 +101,16 @@
     background-clip: text;
     color: transparent;
   }
-  
+
   .bg-gradient-primary {
     background: linear-gradient(to right, #7367f0, #5f5bd8);
   }
-  
+
   .glass {
     background-color: rgba(255, 255, 255, 0.8);
     backdrop-filter: blur(8px);
   }
-  
+
   .glass-dark {
     background-color: rgba(17, 24, 39, 0.8);
     backdrop-filter: blur(8px);
@@ -122,6 +122,7 @@
   from {
     opacity: 0;
   }
+
   to {
     opacity: 1;
   }
@@ -131,6 +132,7 @@
   from {
     opacity: 1;
   }
+
   to {
     opacity: 0;
   }
@@ -141,6 +143,7 @@
     opacity: 0;
     transform: translateY(20px) scale(0.95);
   }
+
   to {
     opacity: 1;
     transform: translateY(0) scale(1);
@@ -152,6 +155,7 @@
     opacity: 1;
     transform: translateY(0) scale(1);
   }
+
   to {
     opacity: 0;
     transform: translateY(20px) scale(0.95);
@@ -164,6 +168,7 @@
     opacity: 0;
     backdrop-filter: blur(0px);
   }
+
   to {
     opacity: 1;
     backdrop-filter: blur(4px);
@@ -176,6 +181,7 @@
     opacity: 0;
     transform: scale(0.9) translateY(-20px);
   }
+
   to {
     opacity: 1;
     transform: scale(1) translateY(0);
@@ -187,6 +193,7 @@
   0% {
     stroke-dashoffset: 100;
   }
+
   100% {
     stroke-dashoffset: 0;
   }
@@ -197,6 +204,7 @@
   0% {
     stroke-dashoffset: 166;
   }
+
   100% {
     stroke-dashoffset: 0;
   }
@@ -204,10 +212,13 @@
 
 /* 脉冲动画 */
 @keyframes pulse {
-  0%, 100% {
+
+  0%,
+  100% {
     opacity: 1;
     transform: scale(1);
   }
+
   50% {
     opacity: 0.8;
     transform: scale(1.05);
@@ -216,9 +227,12 @@
 
 /* 弹跳动画 */
 @keyframes bounce {
-  0%, 100% {
+
+  0%,
+  100% {
     transform: translateY(0);
   }
+
   50% {
     transform: translateY(-10px);
   }
@@ -229,6 +243,7 @@
   from {
     transform: rotate(0deg);
   }
+
   to {
     transform: rotate(360deg);
   }
@@ -239,6 +254,7 @@
   0% {
     background-position: -1000px 0;
   }
+
   100% {
     background-position: 1000px 0;
   }
@@ -250,6 +266,7 @@
     opacity: 0;
     transform: translateY(8px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -310,7 +327,7 @@
 }
 
 .animate-shimmer {
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.5), transparent);
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.5), transparent);
   background-size: 200% 100%;
   animation: shimmer 2s infinite;
 }
@@ -334,6 +351,7 @@
     transform: translateY(0) rotate(0deg);
     opacity: 1;
   }
+
   100% {
     transform: translateY(-100px) rotate(360deg);
     opacity: 0;
@@ -349,6 +367,7 @@
   from {
     width: 0%;
   }
+
   to {
     width: 100%;
   }
@@ -356,4 +375,307 @@
 
 .progress-bar-animate {
   animation: progressBar 0.5s ease-out forwards;
+}
+
+/* ===== NProgress 进度条样式 - 简约版 ===== */
+#nprogress {
+  pointer-events: none;
+}
+
+#nprogress .bar {
+  background: #7367f0;
+  position: fixed;
+  z-index: 9999;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 2px;
+}
+
+#nprogress .peg {
+  display: block;
+  position: absolute;
+  right: 0;
+  width: 80px;
+  height: 100%;
+  opacity: 1;
+  transform: rotate(3deg) translate(0px, -4px);
+}
+
+/* ===== 页面路由切换动画 ===== */
+/* 默认淡入淡出动画 - 快速简约 */
+.page-fade-enter-active {
+  animation: pageFadeIn 0.15s ease-out;
+}
+
+.page-fade-leave-active {
+  animation: pageFadeOut 0.1s ease-in;
+}
+
+@keyframes pageFadeIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes pageFadeOut {
+  from {
+    opacity: 1;
+  }
+
+  to {
+    opacity: 0;
+  }
+}
+
+/* 滑动动画 - 从右侧进入 */
+.page-slide-enter-active {
+  animation: pageSlideIn 0.3s ease-out;
+}
+
+.page-slide-leave-active {
+  animation: pageSlideOut 0.25s ease-in;
+}
+
+@keyframes pageSlideIn {
+  from {
+    opacity: 0;
+    transform: translateX(30px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes pageSlideOut {
+  from {
+    opacity: 1;
+    transform: translateX(0);
+  }
+
+  to {
+    opacity: 0;
+    transform: translateX(-30px);
+  }
+}
+
+/* 缩放淡入动画 - 适合登录成功过渡 */
+.page-scale-enter-active {
+  animation: pageScaleIn 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.page-scale-leave-active {
+  animation: pageScaleOut 0.2s ease-in;
+}
+
+@keyframes pageScaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes pageScaleOut {
+  from {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  to {
+    opacity: 0;
+    transform: scale(1.02);
+  }
+}
+
+/* ===== 增强弹窗动画 ===== */
+/* 弹窗背景淡入增强 */
+@keyframes modalBackdropInEnhanced {
+  from {
+    opacity: 0;
+    backdrop-filter: blur(0px);
+  }
+
+  to {
+    opacity: 1;
+    backdrop-filter: blur(4px);
+  }
+}
+
+/* 弹窗内容弹出增强 - 弹性效果 */
+@keyframes modalContentInEnhanced {
+  0% {
+    opacity: 0;
+    transform: scale(0.9) translateY(-20px);
+  }
+
+  50% {
+    transform: scale(1.02) translateY(0);
+  }
+
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+/* 弹窗关闭动画 */
+@keyframes modalContentOut {
+  from {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+
+  to {
+    opacity: 0;
+    transform: scale(0.95) translateY(10px);
+  }
+}
+
+/* 弹窗背景关闭动画 */
+@keyframes modalBackdropOut {
+  from {
+    opacity: 1;
+  }
+
+  to {
+    opacity: 0;
+  }
+}
+
+.modal-enter {
+  animation: modalBackdropInEnhanced 0.25s ease-out forwards;
+}
+
+.modal-leave {
+  animation: modalBackdropOut 0.2s ease-out forwards;
+}
+
+.modal-content-enter {
+  animation: modalContentInEnhanced 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+.modal-content-leave {
+  animation: modalContentOut 0.2s ease-out forwards;
+}
+
+/* ===== 登录成功过渡动画 ===== */
+@keyframes loginSuccessOverlay {
+  0% {
+    opacity: 0;
+  }
+
+  50% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0;
+  }
+}
+
+.login-success-overlay {
+  position: fixed;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(115, 103, 240, 0.95), rgba(95, 91, 216, 0.95));
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  animation: loginSuccessOverlay 1.5s ease-in-out forwards;
+}
+
+@keyframes loginSuccessIcon {
+  0% {
+    opacity: 0;
+    transform: scale(0.5);
+  }
+
+  50% {
+    opacity: 1;
+    transform: scale(1.1);
+  }
+
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.login-success-icon {
+  animation: loginSuccessIcon 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+@keyframes loginSuccessText {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.login-success-text {
+  animation: loginSuccessText 0.4s ease-out 0.2s forwards;
+  opacity: 0;
+}
+/* �Զ�������� */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Modal ���� */
+.modal-enter-active,
+.modal-leave-active {
+  transition: opacity 0.3s ease;
+}
+
+.modal-enter-from,
+.modal-leave-to {
+  opacity: 0;
+}
+
+.modal-zoom-enter-active,
+.modal-zoom-leave-active {
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.modal-zoom-enter-from,
+.modal-zoom-leave-to {
+  opacity: 0;
+  transform: scale(0.95);
+}
+
+.modal-zoom-enter-to,
+.modal-zoom-leave-from {
+  opacity: 1;
+  transform: scale(1);
 }

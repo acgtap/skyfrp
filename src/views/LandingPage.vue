@@ -1,84 +1,7 @@
 <template>
   <div class="min-h-screen bg-[#f8f7fa]">
     <!-- 导航栏 -->
-    <nav class="bg-white shadow-sm border-b border-gray-200">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="flex justify-between items-center h-16">
-          <!-- Logo -->
-          <div class="flex items-center">
-            <div class="flex-shrink-0 flex items-center">
-              <div class="w-8 h-8 bg-[#7367f0] rounded-lg flex items-center justify-center">
-                <span class="text-white font-bold text-lg">S</span>
-              </div>
-              <span class="ml-2 text-xl font-bold text-black">SkyFRP</span>
-            </div>
-          </div>
-          
-          <!-- 导航菜单 -->
-          <div class="hidden md:block">
-            <div class="ml-10 flex items-baseline space-x-4">
-              <a href="#home" @click="scrollToSection('home')" 
-                 class="text-black hover:text-[#7367f0] px-3 py-2 rounded-md text-sm font-medium transition-colors">
-                首页
-              </a>
-              <a href="#features" @click="scrollToSection('features')" 
-                 class="text-black hover:text-[#7367f0] px-3 py-2 rounded-md text-sm font-medium transition-colors">
-                介绍
-              </a>
-              <a href="#pricing" @click="scrollToSection('pricing')" 
-                 class="text-black hover:text-[#7367f0] px-3 py-2 rounded-md text-sm font-medium transition-colors">
-                定价
-              </a>
-              <a href="#about" @click="scrollToSection('about')" 
-                 class="text-black hover:text-[#7367f0] px-3 py-2 rounded-md text-sm font-medium transition-colors">
-                关于
-              </a>
-              <a href="#help" @click="scrollToSection('help')" 
-                 class="text-black hover:text-[#7367f0] px-3 py-2 rounded-md text-sm font-medium transition-colors">
-                帮助文档
-              </a>
-            </div>
-          </div>
-
-          <!-- 移动端菜单按钮 -->
-          <div class="md:hidden">
-            <button @click="mobileMenuOpen = !mobileMenuOpen" 
-                    class="text-black hover:text-[#7367f0] focus:outline-none">
-              <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
-                      d="M4 6h16M4 12h16M4 18h16" />
-              </svg>
-            </button>
-          </div>
-        </div>
-
-        <!-- 移动端菜单 -->
-        <div v-show="mobileMenuOpen" class="md:hidden">
-          <div class="px-2 pt-2 pb-3 space-y-1 sm:px-3 border-t border-gray-200">
-            <a href="#home" @click="scrollToSection('home')" 
-               class="text-black hover:text-[#7367f0] block px-3 py-2 rounded-md text-base font-medium">
-              首页
-            </a>
-            <a href="#features" @click="scrollToSection('features')" 
-               class="text-black hover:text-[#7367f0] block px-3 py-2 rounded-md text-base font-medium">
-              介绍
-            </a>
-            <a href="#pricing" @click="scrollToSection('pricing')" 
-               class="text-black hover:text-[#7367f0] block px-3 py-2 rounded-md text-base font-medium">
-              定价
-            </a>
-            <a href="#about" @click="scrollToSection('about')" 
-               class="text-black hover:text-[#7367f0] block px-3 py-2 rounded-md text-base font-medium">
-              关于
-            </a>
-            <a href="#help" @click="scrollToSection('help')" 
-               class="text-black hover:text-[#7367f0] block px-3 py-2 rounded-md text-base font-medium">
-              帮助文档
-            </a>
-          </div>
-        </div>
-      </div>
-    </nav>
+    <MainHeader />
 
     <!-- 首页部分 -->
     <section id="home" class="py-20">
@@ -270,21 +193,7 @@
       </div>
     </section>
 
-    <!-- 页脚 -->
-    <footer class="bg-white border-t border-gray-200 py-12">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="text-center">
-          <div class="flex items-center justify-center mb-4">
-            <div class="w-8 h-8 bg-[#7367f0] rounded-lg flex items-center justify-center">
-              <span class="text-white font-bold text-lg">S</span>
-            </div>
-            <span class="ml-2 text-xl font-bold text-black">SkyFRP</span>
-          </div>
-          <p class="text-black mb-4">专业的内网穿透服务</p>
-          <p class="text-black">QQ交流群：572658815</p>
-        </div>
-      </div>
-    </footer>
+    <MainFooter />
 
     <!-- 登录加载界面 -->
     <div v-if="showLoginProgress" class="fixed inset-0 z-50" style="animation: fadeIn 0.3s ease-out">
@@ -339,11 +248,10 @@ import { authAPI } from '../api'
 import { userStore } from '../stores/user'
 import api from '../api'
 import { logUserAction, LOG_TYPES, LOG_ACTIONS } from '../utils/logger'
+import MainHeader from '../components/MainHeader.vue'
+import MainFooter from '../components/MainFooter.vue'
 
 const router = useRouter()
-
-// 移动端菜单状态
-const mobileMenuOpen = ref(false)
 
 // 登录进度相关
 const showLoginProgress = ref(false)
@@ -358,14 +266,12 @@ const stats = ref({
   userCount: 8960
 })
 
-// 滚动到指定部分
+// 滚动到指定部分 (for compatibility if needed, though header handles navigation)
 const scrollToSection = (sectionId) => {
   const element = document.getElementById(sectionId)
   if (element) {
     element.scrollIntoView({ behavior: 'smooth' })
   }
-  // 关闭移动端菜单
-  mobileMenuOpen.value = false
 }
 
 // 显示登录进度

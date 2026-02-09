@@ -1,5 +1,5 @@
 <template>
-  <DashboardLayout>
+  <div>
     <div class="space-y-8">
       <!-- 页面标题 -->
       <div>
@@ -147,12 +147,11 @@
         </div>
       </div>
     </div>
-  </DashboardLayout>
+  </div>
 </template>
 
 <script setup>
 import { useRouter } from 'vue-router'
-import DashboardLayout from '../components/DashboardLayout.vue'
 
 const router = useRouter()
 

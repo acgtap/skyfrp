@@ -1,5 +1,5 @@
 <template>
-  <DashboardLayout>
+  <div>
     <div class="space-y-8">
       <!-- 页面标题 -->
       <div>
@@ -120,7 +120,7 @@
         </div>
       </div>
     </div>
-  </DashboardLayout>
+  </div>
 </template>
 
 <script setup>
@@ -128,7 +128,6 @@ import { ref, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { userStore } from '../stores/user'
 import { tunnelAPI } from '../api'
-import DashboardLayout from '../components/DashboardLayout.vue'
 import { showSuccess, showError } from '../utils/modal'
 
 const router = useRouter()

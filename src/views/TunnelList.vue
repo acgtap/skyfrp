@@ -1,5 +1,5 @@
 <template>
-  <DashboardLayout>
+  <div>
     <div class="space-y-6">
       <!-- 页面标题和创建按钮 -->
       <div class="flex justify-between items-center">
@@ -143,7 +143,8 @@
     </div>
 
     <!-- 创建隧道模态框 -->
-    <div v-if="showCreateModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <Transition name="modal-zoom">
+      <div v-if="showCreateModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div class="bg-white rounded-lg p-8 max-w-md w-full mx-4">
         <h2 class="text-xl font-bold text-gray-900 mb-6">创建隧道</h2>
         
@@ -223,10 +224,12 @@
           </div>
         </form>
       </div>
-    </div>
+      </div>
+    </Transition>
     
     <!-- 编辑隧道模态框 -->
-    <div v-if="showEditModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <Transition name="modal-zoom">
+      <div v-if="showEditModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div class="bg-white rounded-lg p-8 max-w-md w-full mx-4">
         <h2 class="text-xl font-bold text-gray-900 mb-6">编辑隧道</h2>
         
@@ -296,8 +299,9 @@
           </div>
         </form>
       </div>
-    </div>
-  </DashboardLayout>
+      </div>
+    </Transition>
+  </div>
 </template>
 
 <script setup>
@@ -305,7 +309,6 @@ import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { userStore } from '../stores/user'
 import { tunnelAPI, nodeAPI } from '../api'
-import DashboardLayout from '../components/DashboardLayout.vue'
 import { logUserAction, LOG_TYPES, LOG_ACTIONS } from '../utils/logger'
 import { showSuccess, showError, showConfirm } from '../utils/modal'
 

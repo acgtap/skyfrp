@@ -1,10 +1,13 @@
 <template>
-  <DashboardLayout>
-    <div>
-      <!-- 页面标题 -->
-      <div class="mb-6">
-        <h1 class="text-2xl text-black">总览</h1>
-        <p class="text-gray-600 mt-1">查看您的隧道统计和系统通知</p>
+  <div>
+      <div class="mb-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div>
+          <h1 class="text-2xl text-black">总览</h1>
+          <p class="text-gray-600 mt-1">查看您的隧道统计和系统通知</p>
+        </div>
+        <div v-if="hitokoto" class="hidden md:block text-sm text-gray-500 italic opacity-80 transition-opacity duration-500 text-right max-w-md bg-gray-50 px-3 py-1.5 rounded-lg border border-gray-100">
+          {{ hitokoto }}
+        </div>
       </div>
 
       <!-- 统计卡片 - 简约淡紫色背景 -->
@@ -89,7 +92,7 @@
                   
                   <!-- 上传曲线（蓝色） -->
                   <polyline 
-                    :points="getChartPoints(weekTrafficData, 'in_mb')"
+                    :points="getChartPoints(filteredWeekTrafficData, 'in_mb')"
                     fill="none" 
                     stroke="#3b82f6" 
                     stroke-width="2.5"
@@ -98,13 +101,13 @@
                   
                   <!-- 上传区域填充 -->
                   <polygon 
-                    :points="getChartArea(weekTrafficData, 'in_mb')"
+                    :points="getChartArea(filteredWeekTrafficData, 'in_mb')"
                     fill="url(#blueGradient)" 
                     opacity="0.2" />
                   
                   <!-- 下载曲线（绿色） -->
                   <polyline 
-                    :points="getChartPoints(weekTrafficData, 'out_mb')"
+                    :points="getChartPoints(filteredWeekTrafficData, 'out_mb')"
                     fill="none" 
                     stroke="#10b981" 
                     stroke-width="2.5"
@@ -113,20 +116,20 @@
                   
                   <!-- 下载区域填充 -->
                   <polygon 
-                    :points="getChartArea(weekTrafficData, 'out_mb')"
+                    :points="getChartArea(filteredWeekTrafficData, 'out_mb')"
                     fill="url(#greenGradient)" 
                     opacity="0.2" />
                   
                   <!-- 数据点 -->
-                  <g v-for="(day, index) in weekTrafficData" :key="'point-' + index">
+                  <g v-for="(day, index) in filteredWeekTrafficData" :key="'point-' + index">
                     <circle 
-                      :cx="index * 100 + 50" 
+                      :cx="getXPosition(index, filteredWeekTrafficData.length)" 
                       :cy="getYPosition(day.in_mb)"
                       r="4" 
                       fill="#3b82f6" 
                       class="cursor-pointer hover:r-6 transition-all" />
                     <circle 
-                      :cx="index * 100 + 50" 
+                      :cx="getXPosition(index, filteredWeekTrafficData.length)" 
                       :cy="getYPosition(day.out_mb)"
                       r="4" 
                       fill="#10b981" 
@@ -148,9 +151,9 @@
                 
                 <!-- X轴标签（日期） -->
                 <div class="flex justify-between mt-2 px-4">
-                  <div v-for="(day, index) in weekTrafficData" :key="'label-' + index" 
+                  <div v-for="(day, index) in filteredWeekTrafficData" :key="'label-' + index" 
                        class="text-xs text-gray-500 text-center" 
-                       :style="{ width: '14.28%' }">
+                       :style="{ width: (100 / Math.max(filteredWeekTrafficData.length, 1)) + '%' }">
                     {{ formatDate(day.date) }}
                   </div>
                 </div>
@@ -158,7 +161,7 @@
               
               <!-- 数据列表 -->
               <div class="space-y-2">
-                <div v-for="(day, index) in weekTrafficData" :key="'data-' + index" 
+                <div v-for="(day, index) in filteredWeekTrafficData" :key="'data-' + index" 
                      class="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
                   <div class="flex items-center space-x-3">
                     <span class="text-sm text-gray-600 w-16">{{ formatDate(day.date) }}</span>
@@ -185,37 +188,53 @@
             </div>
           </div>
           
-          <!-- 交流群和介绍 -->
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div class="bg-white rounded-xl border border-gray-200 p-6">
-              <h3 class="text-lg text-black mb-4">交流群</h3>
-              <div class="flex items-center space-x-4 p-4 bg-gray-50 rounded-xl border border-gray-200">
-                <div class="w-12 h-12 bg-[#7367f0] rounded-xl flex items-center justify-center">
-                  <span class="text-white text-sm">QQ</span>
+          <!-- 交流群和介绍（合并卡片） -->
+          <div class="bg-white rounded-xl border border-gray-200 p-6">
+            <div class="space-y-8">
+              <!-- 交流群 -->
+              <div>
+                <h3 class="text-lg text-black mb-4 flex items-center">
+                  <svg class="w-5 h-5 text-[#7367f0] mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                  </svg>
+                  交流群
+                </h3>
+                <div class="flex items-center space-x-4 p-4 bg-gray-50 rounded-xl border border-gray-200 hover:border-[#7367f0]/30 transition-colors">
+                  <div class="w-12 h-12 bg-[#7367f0] rounded-xl flex items-center justify-center shadow-lg shadow-[#7367f0]/20">
+                    <svg class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M12.003 2c-5.523 0-10 4.477-10 10s4.477 10 10 10 10-4.477 10-10-4.477-10-10-10zm0 18.333c-4.603 0-8.333-3.73-8.333-8.333S7.4 3.667 12.003 3.667c4.603 0 8.333 3.73 8.333 8.333s-3.73 8.333-8.333 8.333zm-1.667-5.833h3.334c.46 0 .833.373.833.833v.834c0 .46-.373.833-.833.833h-3.334c-.46 0-.833-.373-.833-.833v-.834c0-.46.373-.833.833-.833zm0-5h3.334c.46 0 .833.373.833.833v2.5c0 .46-.373.833-.833.833h-3.334c-.46 0-.833-.373-.833-.833v-2.5c0-.46.373-.833.833-.833z"/>
+                    </svg>
+                  </div>
+                  <div class="flex-1">
+                    <p class="text-black font-medium">官方QQ群</p>
+                    <p class="text-sm text-gray-500">572658815</p>
+                  </div>
+                  <button @click="joinQQGroup" class="bg-[#7367f0] hover:bg-[#5f5bd8] text-white px-4 py-2 rounded-lg text-sm transition-colors shadow-md shadow-[#7367f0]/20">
+                    加入
+                  </button>
                 </div>
-                <div class="flex-1">
-                  <p class="text-black">官方QQ群</p>
-                  <p class="text-sm text-gray-600">572658815</p>
-                </div>
-                <button @click="joinQQGroup" class="bg-[#7367f0] hover:bg-[#5f5bd8] text-white px-4 py-2 rounded-lg text-sm transition-colors">
-                  加入
-                </button>
               </div>
-            </div>
-            
-            <div class="bg-white rounded-xl border border-gray-200 p-6">
-              <h3 class="text-lg text-black mb-4">关于SkyFRP</h3>
-              <p class="text-gray-600 leading-relaxed mb-4">
-                SkyFRP是一个专业的内网穿透服务，为用户提供稳定、高速的网络连接。
-              </p>
-              <div class="grid grid-cols-2 gap-4">
-                <div class="text-center p-3 bg-gray-50 rounded-xl border border-gray-200">
-                  <div class="text-2xl text-black">99.9%</div>
-                  <div class="text-sm text-gray-600">服务可用性</div>
-                </div>
-                <div class="text-center p-3 bg-gray-50 rounded-xl border border-gray-200">
-                  <div class="text-2xl text-black">24/7</div>
-                  <div class="text-sm text-gray-600">技术支持</div>
+
+              <!-- 关于 -->
+              <div class="border-t border-gray-100 pt-8">
+                <h3 class="text-lg text-black mb-4 flex items-center">
+                  <svg class="w-5 h-5 text-[#7367f0] mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                  </svg>
+                  关于SkyFRP
+                </h3>
+                <p class="text-gray-600 leading-relaxed mb-6 text-sm">
+                  SkyFRP是一个专业的内网穿透服务，为用户提供稳定、高速的网络连接。支持多种协议，轻松穿透内网。
+                </p>
+                <div class="grid grid-cols-2 gap-4">
+                  <div class="text-center p-3 bg-gray-50 rounded-xl border border-gray-200">
+                    <div class="text-xl font-bold text-[#7367f0]">99.9%</div>
+                    <div class="text-xs text-gray-500 mt-1">服务可用性</div>
+                  </div>
+                  <div class="text-center p-3 bg-gray-50 rounded-xl border border-gray-200">
+                    <div class="text-xl font-bold text-[#7367f0]">24/7</div>
+                    <div class="text-xs text-gray-500 mt-1">技术支持</div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -266,14 +285,12 @@
         </div>
       </div>
     </div>
-  </DashboardLayout>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { userStore } from '../stores/user'
 import { tunnelAPI } from '../api'
-import DashboardLayout from '../components/DashboardLayout.vue'
 
 // 通知数据（从API获取）
 const notificationHtml = ref('')
@@ -294,6 +311,11 @@ const todayStats = ref({
 
 // 最近7天流量数据（用于图表）
 const weekTrafficData = ref([])
+
+// 过滤后的流量数据（去除流量为空的日期）
+const filteredWeekTrafficData = computed(() => {
+  return weekTrafficData.value.filter(day => day.total_mb > 0)
+})
 
 // 格式化流量显示
 const formatTraffic = (traffic) => {
@@ -322,7 +344,7 @@ const getTrafficPercentage = (traffic) => {
   
   // 找出最大流量值
   const maxTraffic = Math.max(
-    ...weekTrafficData.value.map(day => Math.max(day.in_mb, day.out_mb))
+    ...filteredWeekTrafficData.value.map(day => Math.max(day.in_mb, day.out_mb))
   )
   
   if (maxTraffic === 0) return 0
@@ -334,11 +356,12 @@ const getTrafficPercentage = (traffic) => {
 
 // 获取Y轴位置（用于曲线图）
 const getYPosition = (traffic) => {
-  if (weekTrafficData.value.length === 0) return 140
+  const data = filteredWeekTrafficData.value
+  if (data.length === 0) return 140
   
   // 找出最大流量值
   const maxTraffic = Math.max(
-    ...weekTrafficData.value.map(day => Math.max(day.in_mb, day.out_mb)),
+    ...data.map(day => Math.max(day.in_mb, day.out_mb)),
     1 // 至少为1，避免除以0
   )
   
@@ -347,12 +370,19 @@ const getYPosition = (traffic) => {
   return 140 - (ratio * 120) // 从底部往上
 }
 
+// 获取X轴位置
+const getXPosition = (index, length) => {
+  const width = 700
+  const step = width / Math.max(length, 1)
+  return index * step + (step / 2)
+}
+
 // 生成曲线图的点坐标
 const getChartPoints = (data, field) => {
-  if (!data || data.length === 0) return '0,140'
+  if (!data || data.length === 0) return ''
   
   return data.map((day, index) => {
-    const x = index * 100 + 50 // 每个点间隔100px，起始偏移50px
+    const x = getXPosition(index, data.length)
     const y = getYPosition(day[field])
     return `${x},${y}`
   }).join(' ')
@@ -360,23 +390,22 @@ const getChartPoints = (data, field) => {
 
 // 生成曲线图的区域填充坐标
 const getChartArea = (data, field) => {
-  if (!data || data.length === 0) return '0,140'
+  if (!data || data.length === 0) return ''
   
-  const points = data.map((day, index) => {
-    const x = index * 100 + 50
-    const y = getYPosition(day[field])
-    return `${x},${y}`
-  }).join(' ')
+  const points = getChartPoints(data, field)
+  const length = data.length
   
   // 添加底部的点以形成闭合区域
-  const lastX = (data.length - 1) * 100 + 50
-  return `${points} ${lastX},160 50,160`
+  const lastX = getXPosition(length - 1, length)
+  const firstX = getXPosition(0, length)
+  
+  return `${points} ${lastX},160 ${firstX},160`
 }
 
 // 加载隧道统计
 const loadTunnelStats = async () => {
   try {
-    const response = await tunnelAPI.getTunnelList(userStore.tempKey)
+    const response = await tunnelAPI.getTunnelList(userStore.tempKey, { hideLoading: true })
     if (response.code === 0 && response.data.tunnels) {
       const tunnels = response.data.tunnels
       tunnelStats.value.count = tunnels.length
@@ -400,6 +429,8 @@ const loadTodayStats = async () => {
     // 查询今日所有隧道的流量
     const response = await tunnelAPI.queryTraffic(userStore.tempKey, {
       date_range: 'today'
+    }, {
+      hideLoading: true
     })
     
     console.log('今日流量API响应:', response)
@@ -511,6 +542,20 @@ const loadWeekTraffic = async () => {
   }
 }
 
+// 一言数据
+const hitokoto = ref('')
+
+// 获取一言
+const fetchHitokoto = async () => {
+  try {
+    const res = await fetch('https://v1.hitokoto.cn/?c=i')
+    const data = await res.json()
+    hitokoto.value = `${data.hitokoto} —— ${data.from}`
+  } catch (e) {
+    console.error('获取一言失败', e)
+  }
+}
+
 // 加载系统公告
 const loadNotifications = async () => {
   try {
@@ -542,7 +587,8 @@ onMounted(() => {
     loadTunnelStats(),
     loadNotifications(),
     loadTodayStats(),
-    loadWeekTraffic()
+    loadWeekTraffic(),
+    fetchHitokoto()
   ])
   
   // 定时刷新统计数据（每30秒）

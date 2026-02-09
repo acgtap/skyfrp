@@ -1,5 +1,5 @@
 <template>
-  <DashboardLayout>
+  <div>
     <!-- 页面标题 -->
     <div class="mb-6">
       <h1 class="text-2xl text-black">帮助文档</h1>
@@ -438,12 +438,11 @@ WantedBy=multi-user.target</code>
         </div>
       </div>
     </div>
-  </DashboardLayout>
+  </div>
 </template>
 
 <script setup>
 import { ref, computed } from 'vue'
-import DashboardLayout from '../components/DashboardLayout.vue'
 
 // 搜索关键词
 const searchQuery = ref('')
