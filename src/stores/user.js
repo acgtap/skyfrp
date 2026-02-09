@@ -108,12 +108,27 @@ export const userStore = reactive({
       if (response.code === 0) {
         this.userInfo = { ...this.userInfo, ...response.data }
         console.log('用户数据更新成功:', this.userInfo)
+      } else if (response.code === -2 || (response.msg && (response.msg.includes('临时密钥') || response.msg.includes('temp_key')))) {
+        // 临时密钥无效，自动登出
+        console.error('临时密钥无效，自动登出')
+        await this.logout()
+        // 不抛出错误，避免在控制台显示未捕获的错误
+        return
       } else {
         console.error('获取用户数据失败:', response.msg)
         throw new Error(response.msg || '获取用户数据失败')
       }
     } catch (error) {
       console.error('加载用户数据失败:', error)
+      // 检查是否是临时密钥无效的错误
+      if (error.response && error.response.data) {
+        const data = error.response.data
+        if (data.code === -2 || (data.msg && (data.msg.includes('临时密钥') || data.msg.includes('temp_key')))) {
+          console.error('临时密钥无效（从错误响应检测），自动登出')
+          await this.logout()
+          return
+        }
+      }
       throw error
     }
   },

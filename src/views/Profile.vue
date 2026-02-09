@@ -5,11 +5,27 @@
         <!-- 用户基本信息卡片 -->
         <div class="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
           <div class="flex items-center space-x-6">
-            <img :src="userStore.userInfo.users_faceimg || '/default-avatar.png'" 
-                 :alt="userStore.userInfo.users_name"
-                 class="w-20 h-20 rounded-full ring-4 ring-[#7367f0]/20 shadow-lg">
+            <div class="relative group">
+              <img :src="userStore.userInfo.users_faceimg || '/default-avatar.png'" 
+                   :alt="userStore.userInfo.users_name"
+                   class="w-20 h-20 rounded-full ring-4 ring-[#7367f0]/20 shadow-lg">
+              <button @click="showEditProfileModal = true"
+                      class="absolute inset-0 w-20 h-20 rounded-full bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path>
+                </svg>
+              </button>
+            </div>
             <div class="flex-1">
-              <h3 class="text-2xl font-bold text-black">{{ userStore.userInfo.users_name || '未设置昵称' }}</h3>
+              <div class="flex items-center space-x-2">
+                <h3 class="text-2xl font-bold text-black">{{ userStore.userInfo.users_name || '未设置昵称' }}</h3>
+                <button @click="showEditProfileModal = true"
+                        class="text-gray-400 hover:text-[#7367f0] transition-colors">
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path>
+                  </svg>
+                </button>
+              </div>
               <div class="flex items-center flex-wrap gap-2 mt-2">
                 <span class="px-3 py-1 text-white text-sm rounded-full font-medium"
                       :class="userStore.userInfo.user_group !== 'default' ? 'bg-amber-500' : 'bg-gradient-to-r from-[#7367f0] to-[#5f5bd8]'">
@@ -374,15 +390,78 @@
         </div>
       </div>
     </DashboardLayout>
+    
+    <!-- 编辑资料模态框 -->
+    <div v-if="showEditProfileModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+      <div class="bg-white rounded-2xl w-full max-w-md shadow-2xl">
+        <div class="p-6">
+          <h3 class="text-xl font-bold text-gray-900 mb-6">编辑资料</h3>
+          
+          <form @submit.prevent="handleUpdateProfile" class="space-y-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">用户名</label>
+              <input v-model="editForm.users_name" 
+                     type="text" 
+                     placeholder="2-20个字符"
+                     class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#7367f0] focus:border-transparent transition-all">
+              <p class="text-xs text-gray-500 mt-1">支持中文、字母、数字、下划线、横线</p>
+            </div>
+            
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">头像地址</label>
+              <input v-model="editForm.users_faceimg" 
+                     type="url" 
+                     placeholder="https://example.com/avatar.jpg"
+                     class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#7367f0] focus:border-transparent transition-all">
+              <p class="text-xs text-gray-500 mt-1">必须是有效的HTTP/HTTPS链接</p>
+            </div>
+            
+            <!-- 头像预览 -->
+            <div v-if="editForm.users_faceimg" class="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
+              <img :src="editForm.users_faceimg" 
+                   alt="头像预览" 
+                   class="w-12 h-12 rounded-full"
+                   @error="e => e.target.src = '/default-avatar.png'">
+              <span class="text-sm text-gray-600">头像预览</span>
+            </div>
+            
+            <div class="flex justify-end space-x-3 pt-4">
+              <button type="button" 
+                      @click="showEditProfileModal = false"
+                      class="px-6 py-2 text-gray-600 hover:text-gray-800 transition-colors">
+                取消
+              </button>
+              <button type="submit" 
+                      :disabled="editLoading"
+                      class="bg-gradient-to-r from-[#7367f0] to-[#5f5bd8] hover:from-[#5f5bd8] hover:to-[#4c46d8] disabled:from-gray-400 disabled:to-gray-500 text-white px-6 py-2 rounded-lg font-medium transition-all">
+                {{ editLoading ? '保存中...' : '保存' }}
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, onMounted, onUnmounted, watch } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
 import { userStore } from '../stores/user'
 import { userAPI, certificationAPI } from '../api'
 import DashboardLayout from '../components/DashboardLayout.vue'
 import { showSuccess, showError, showWarning } from '../utils/modal'
+
+const router = useRouter()
+const route = useRoute()
+
+// 编辑资料
+const showEditProfileModal = ref(false)
+const editForm = ref({
+  users_name: '',
+  users_faceimg: ''
+})
+const editLoading = ref(false)
 
 // 邮箱绑定
 const email = ref('')
@@ -402,6 +481,70 @@ const certificationStatus = ref('none') // none, processing, verified
 const certificationData = ref({})
 const certificationMessage = ref('')
 let statusCheckInterval = null
+
+// 更新用户资料
+const handleUpdateProfile = async () => {
+  // 验证至少填写一个字段
+  if (!editForm.value.users_name && !editForm.value.users_faceimg) {
+    showWarning('请至少填写用户名或头像地址')
+    return
+  }
+  
+  // 验证用户名长度
+  if (editForm.value.users_name && (editForm.value.users_name.length < 2 || editForm.value.users_name.length > 20)) {
+    showWarning('用户名长度必须在2-20个字符之间')
+    return
+  }
+  
+  // 验证头像URL格式
+  if (editForm.value.users_faceimg) {
+    try {
+      new URL(editForm.value.users_faceimg)
+      if (!editForm.value.users_faceimg.startsWith('http://') && !editForm.value.users_faceimg.startsWith('https://')) {
+        showWarning('头像地址必须是有效的HTTP/HTTPS链接')
+        return
+      }
+    } catch {
+      showWarning('头像地址格式不正确')
+      return
+    }
+  }
+  
+  editLoading.value = true
+  try {
+    const data = {}
+    if (editForm.value.users_name) data.users_name = editForm.value.users_name
+    if (editForm.value.users_faceimg) data.users_faceimg = editForm.value.users_faceimg
+    
+    const response = await userAPI.updateProfile(userStore.tempKey, data)
+    
+    if (response.code === 0) {
+      showSuccess('资料修改成功')
+      showEditProfileModal.value = false
+      // 重新加载用户数据
+      await userStore.loadUserData()
+      // 重置表单
+      editForm.value = {
+        users_name: '',
+        users_faceimg: ''
+      }
+    } else if (response.code === -1 && response.msg && response.msg.includes('add_rate_limit')) {
+      // 后端服务器配置错误
+      showError('服务器配置错误，请联系管理员修复')
+    } else {
+      showError(response.msg || '资料修改失败')
+    }
+  } catch (error) {
+    console.error('资料修改失败:', error)
+    if (error.response && error.response.data && error.response.data.msg && error.response.data.msg.includes('add_rate_limit')) {
+      showError('服务器配置错误，请联系管理员修复')
+    } else {
+      showError('资料修改失败，请稍后重试')
+    }
+  } finally {
+    editLoading.value = false
+  }
+}
 
 // 格式化流量显示
 const formatTraffic = (traffic) => {
@@ -549,6 +692,8 @@ const handleInitCertification = async () => {
           id_card_no_masked: certForm.value.idcard.replace(/^(.{6})(?:\d+)(.{4})$/, '$1********$2')
         }
         showSuccess('您已完成实名认证')
+        // 清除localStorage中的认证数据
+        localStorage.removeItem('certification_data')
         // 重新加载用户数据
         await userStore.loadUserData()
       } else if (response.data && response.data.certify_id) {
@@ -556,6 +701,14 @@ const handleInitCertification = async () => {
         certificationData.value = response.data
         certificationStatus.value = 'processing'
         certificationMessage.value = '请扫描二维码完成认证'
+        
+        // 保存认证数据到localStorage（包括二维码URL）
+        localStorage.setItem('certification_data', JSON.stringify({
+          certify_id: response.data.certify_id,
+          scan_url: response.data.scan_url || response.data.certify_url,
+          cert_type: certForm.value.certType,
+          timestamp: Date.now()
+        }))
         
         // 开始轮询认证状态
         startStatusCheck(response.data.certify_id)
@@ -597,6 +750,8 @@ const startStatusCheck = (certifyId) => {
         certificationStatus.value = 'verified'
         certificationData.value = response.data
         clearInterval(statusCheckInterval)
+        // 清除localStorage中的认证数据
+        localStorage.removeItem('certification_data')
         showSuccess('实名认证成功')
         // 重新加载用户数据
         await userStore.loadUserData()
@@ -607,6 +762,8 @@ const startStatusCheck = (certifyId) => {
         // 认证失败
         certificationStatus.value = 'none'
         clearInterval(statusCheckInterval)
+        // 清除localStorage中的认证数据
+        localStorage.removeItem('certification_data')
         showError(response.msg || '认证失败')
       }
     } catch (error) {
@@ -618,6 +775,34 @@ const startStatusCheck = (certifyId) => {
 // 检查用户是否已认证
 const checkCertificationStatus = async () => {
   try {
+    // 先尝试从localStorage恢复认证数据
+    const savedCertData = localStorage.getItem('certification_data')
+    if (savedCertData) {
+      try {
+        const certData = JSON.parse(savedCertData)
+        // 检查数据是否过期（超过30分钟）
+        if (certData.timestamp && Date.now() - certData.timestamp < 30 * 60 * 1000) {
+          console.log('从localStorage恢复认证数据:', certData)
+          certificationStatus.value = 'processing'
+          certForm.value.certType = certData.cert_type || 'person'
+          certificationData.value = {
+            certify_id: certData.certify_id,
+            scan_url: certData.scan_url
+          }
+          certificationMessage.value = '认证进行中，请耐心等待'
+          // 开始轮询认证状态
+          startStatusCheck(certData.certify_id)
+          return // 直接返回，不再调用API
+        } else {
+          // 数据过期，清除
+          localStorage.removeItem('certification_data')
+        }
+      } catch (e) {
+        console.error('解析localStorage认证数据失败:', e)
+        localStorage.removeItem('certification_data')
+      }
+    }
+    
     // 调用获取认证信息接口
     const response = await certificationAPI.getCertificationInfo(userStore.tempKey)
     
@@ -644,6 +829,8 @@ const checkCertificationStatus = async () => {
           certify_id: certInfo.certify_id,
           create_time: certInfo.create_time
         }
+        // 清除localStorage中的认证数据
+        localStorage.removeItem('certification_data')
         console.log('已认证，保存的数据:', {
           real_name: certificationData.value.real_name,
           id_card_no_masked: certificationData.value.id_card_no_masked,
@@ -656,9 +843,21 @@ const checkCertificationStatus = async () => {
         certificationStatus.value = 'processing'
         certForm.value.certType = certInfo.cert_type || 'person'
         certificationData.value = {
-          certify_id: certInfo.certify_id
+          certify_id: certInfo.certify_id,
+          scan_url: certInfo.scan_url || certInfo.certify_url // 保存二维码链接
         }
         certificationMessage.value = '认证进行中，请耐心等待'
+        
+        // 如果API返回了scan_url，保存到localStorage
+        if (certificationData.value.scan_url) {
+          localStorage.setItem('certification_data', JSON.stringify({
+            certify_id: certInfo.certify_id,
+            scan_url: certificationData.value.scan_url,
+            cert_type: certInfo.cert_type || 'person',
+            timestamp: Date.now()
+          }))
+        }
+        
         // 开始轮询认证状态
         startStatusCheck(certInfo.certify_id)
       } else {
@@ -682,6 +881,22 @@ const checkCertificationStatus = async () => {
 
 onMounted(() => {
   checkCertificationStatus()
+  
+  // 检查路由查询参数，如果有edit=true则打开编辑弹窗
+  if (route.query.edit === 'true') {
+    showEditProfileModal.value = true
+    // 清除查询参数
+    router.replace({ path: '/profile' })
+  }
+})
+
+// 监听路由变化
+watch(() => route.query.edit, (newVal) => {
+  if (newVal === 'true') {
+    showEditProfileModal.value = true
+    // 清除查询参数
+    router.replace({ path: '/profile' })
+  }
 })
 
 onUnmounted(() => {

@@ -255,19 +255,90 @@ HTTP服务器接口调用文档
 
 27. 隧道流量查询接口
 接口地址: /api/traffic/query
+
 请求方法: POST
+
 请求格式: JSON
-请求参数:
-  user_temp_key: string, 必填, 临时密钥
-  tunnel_name: string, 可选, 单个隧道名称（与tunnel_names二选一）
-  tunnel_names: array, 可选, 多个隧道名称数组（与tunnel_name二选一）
-  date_range: string, 可选, 时间范围：today(今天) 或 7days(最近7天)
-说明: 不传隧道相关参数时，默认查询全部隧道
+
+请求参数（JSON格式）:
+参数名	类型	必填	说明
+user_temp_key	string	是	临时密钥
+tunnel_name	string	否	单个隧道名称（与tunnel_names二选一）
+tunnel_names	array	否	多个隧道名称数组（与tunnel_name二选一）
+date_range	string	否	时间范围：today(今天) 或 7days(最近7天)
+说明:
+1. 支持查询单个隧道、多个隧道或全部隧道的流量使用情况
+2. 支持查询今天或最近7天的流量数据
+3. 不传隧道相关参数时，默认查询全部隧道
 
 28. 健康检查接口
 接口地址: /api/health
 请求方法: GET
 请求参数: 无
+
+29. 更新用户资料接口
+接口地址: /api/update_profile
+
+请求方法: POST
+
+请求格式: form-data
+
+请求参数:
+参数名	类型	必填	说明
+user_temp_key	string	是	用户临时密钥（用于身份验证）
+users_name	string	否	新的用户名（2-20个字符，支持中文、字母、数字、下划线、横线）
+users_faceimg	string	否	新的头像地址（必须是有效的HTTP/HTTPS链接）
+响应数据:
+{
+  "code": 0,
+  "msg": "资料修改成功",
+  "timestamp": "2024-01-01T12:00:00",
+  "data": {
+    "new_username": "新用户名"
+  }
+}
+说明:
+1. 此接口用于修改用户资料，可以修改用户名或头像，或同时修改两者
+2. 至少需要提供用户名或头像地址中的一个
+3. 用户名长度限制为2-20个字符，支持中文、字母、数字、下划线(_)、横线(-)
+4. 用户名必须唯一，不能与其他用户重复
+5. 头像地址必须是有效的HTTP或HTTPS链接
+6. 用户需要通过临时密钥进行身份验证
+7. 修改成功后将返回新的用户名（仅当修改了用户名时）
+
+30. 修改隧道信息接口
+接口地址: /api/modify_tunnel_information
+
+请求方法: POST
+
+请求格式: form-data
+
+请求参数:
+参数名	类型	必填	说明
+user_temp_key	string	是	用户临时密钥（用于身份验证）
+mode	string	是	修改模式（port/agreement/localip/return_port）
+value	string	是	修改后的值
+user_tunnel	string	是	隧道名称
+修改模式说明:
+模式	说明	value格式要求
+port	修改本地端口	1-65535之间的数字
+agreement	修改协议类型	tcp/udp/http/https/stcp/sudp/xtcp/xtcpmux
+localip	修改本地IP地址	有效的IP地址格式
+return_port	修改返回端口	1-65535之间的数字
+响应数据:
+{
+  "code": 0,
+  "msg": "修改端口成功",
+  "timestamp": "2024-01-01T12:00:00"
+}
+说明:
+1. 此接口用于修改隧道配置信息
+2. 隧道正在运行中（tunnel_state为'true'）时禁止修改，需要先停止隧道
+3. 端口修改会验证端口是否在1-65535范围内
+4. return_port模式会检查节点IP下端口是否唯一
+5. 协议修改只支持预定义的8种协议类型
+6. IP地址修改会验证IP地址格式
+7. 接口有频率限制，防止恶意请求
 
 注意事项
 --------

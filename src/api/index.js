@@ -27,7 +27,11 @@ api.interceptors.request.use(
     // 如果是POST请求且数据是对象，转换为URLSearchParams（form-data格式）
     // 但如果已经指定了Content-Type为application/json，则保持JSON格式
     if (config.method === 'post' && config.data && typeof config.data === 'object') {
-      if (config.headers['Content-Type'] !== 'application/json') {
+      if (config.headers['Content-Type'] === 'application/json') {
+        // JSON格式，需要序列化
+        config.data = JSON.stringify(config.data)
+      } else {
+        // form-data格式
         const params = new URLSearchParams()
         Object.keys(config.data).forEach(key => {
           params.append(key, config.data[key])
@@ -200,6 +204,14 @@ export const userAPI = {
     return api.post('/api/reboot_users_data', {
       user_temp_key: userTempKey
     })
+  },
+  
+  // 更新用户资料
+  updateProfile: (userTempKey, data) => {
+    return api.post('/api/update_profile', {
+      user_temp_key: userTempKey,
+      ...data
+    })
   }
 }
 
@@ -233,6 +245,30 @@ export const tunnelAPI = {
     return api.post('/api/get_frp_node_config', {
       user_temp_key: userTempKey,
       user_tunnel: userTunnel
+    })
+  },
+  
+  // 查询隧道流量
+  queryTraffic: (userTempKey, params = {}) => {
+    const requestData = {
+      user_temp_key: userTempKey,
+      ...params
+    }
+    console.log('查询流量请求数据:', requestData)
+    return api.post('/api/traffic/query', requestData, {
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    })
+  },
+  
+  // 修改隧道信息
+  modifyTunnel: (userTempKey, tunnelName, mode, value) => {
+    return api.post('/api/modify_tunnel_information', {
+      user_temp_key: userTempKey,
+      user_tunnel: tunnelName,
+      mode: mode,
+      value: value
     })
   }
 }
