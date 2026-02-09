@@ -76,6 +76,22 @@
                 </div>
               </div>
               <div class="relative group">
+                <button @click="openEditTunnelModal(tunnel)"
+                        :disabled="tunnel.tunnel_state === 'online' || tunnel.tunnel_state === 'true' || tunnel.tunnel_state === true"
+                        class="text-purple-600 hover:text-purple-800 p-2 rounded hover:bg-purple-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                  </svg>
+                </button>
+                <!-- 提示框 -->
+                <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-1.5 bg-gray-900 text-white text-xs rounded-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 whitespace-nowrap z-10">
+                  {{ (tunnel.tunnel_state === 'online' || tunnel.tunnel_state === 'true' || tunnel.tunnel_state === true) ? '隧道运行中无法编辑' : '编辑隧道' }}
+                  <div class="absolute top-full left-1/2 transform -translate-x-1/2 -mt-1">
+                    <div class="border-4 border-transparent border-t-gray-900"></div>
+                  </div>
+                </div>
+              </div>
+              <div class="relative group">
                 <button @click="getConfig(tunnel.Tunnel_name)"
                         class="text-blue-600 hover:text-blue-800 p-2 rounded hover:bg-blue-50 transition-colors">
                   <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -208,6 +224,79 @@
         </form>
       </div>
     </div>
+    
+    <!-- 编辑隧道模态框 -->
+    <div v-if="showEditModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div class="bg-white rounded-lg p-8 max-w-md w-full mx-4">
+        <h2 class="text-xl font-bold text-gray-900 mb-6">编辑隧道</h2>
+        
+        <form @submit.prevent="updateTunnel" class="space-y-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">隧道名称</label>
+            <input :value="editForm.tunnelName" 
+                   type="text" 
+                   disabled
+                   class="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-100 cursor-not-allowed"
+                   placeholder="隧道名称不可修改">
+          </div>
+          
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">本地IP</label>
+            <input v-model="editForm.localIp" 
+                   type="text" 
+                   required
+                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#7367f0] focus:border-transparent"
+                   placeholder="127.0.0.1">
+          </div>
+          
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">本地端口</label>
+            <input v-model="editForm.localPort" 
+                   type="number" 
+                   required
+                   min="1"
+                   max="65535"
+                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#7367f0] focus:border-transparent"
+                   placeholder="8080">
+          </div>
+          
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">协议</label>
+            <select v-model="editForm.protocol" 
+                    required
+                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#7367f0] focus:border-transparent">
+              <option value="">请选择协议</option>
+              <option value="tcp">TCP</option>
+              <option value="udp">UDP</option>
+            </select>
+          </div>
+          
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">远程端口</label>
+            <input v-model="editForm.remotePort" 
+                   type="number" 
+                   required
+                   min="1"
+                   max="65535"
+                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#7367f0] focus:border-transparent"
+                   placeholder="远程端口">
+          </div>
+          
+          <div class="flex justify-end space-x-4 pt-4">
+            <button type="button" 
+                    @click="showEditModal = false"
+                    class="px-4 py-2 text-gray-600 hover:text-gray-800 transition-colors">
+              取消
+            </button>
+            <button type="submit" 
+                    :disabled="editLoading"
+                    class="bg-[#7367f0] hover:bg-[#5f5bd8] disabled:bg-gray-400 text-white px-6 py-2 rounded-lg font-medium transition-colors">
+              {{ editLoading ? '保存中...' : '保存修改' }}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
   </DashboardLayout>
 </template>
 
@@ -228,6 +317,18 @@ const nodes = ref([])
 const loading = ref(true)
 const createLoading = ref(false)
 const showCreateModal = ref(false)
+
+// 编辑隧道
+const showEditModal = ref(false)
+const editLoading = ref(false)
+const editForm = ref({
+  tunnelName: '',
+  localIp: '',
+  localPort: '',
+  protocol: '',
+  remotePort: '',
+  originalData: null
+})
 
 // 创建表单
 const createForm = ref({
@@ -375,6 +476,73 @@ const deleteTunnel = async (tunnelName) => {
   )
 }
 
+// 打开编辑隧道模态框
+const openEditTunnelModal = (tunnel) => {
+  editForm.value = {
+    tunnelName: tunnel.Tunnel_name,
+    localIp: tunnel.Local_ip,
+    localPort: tunnel.Local_port,
+    protocol: tunnel.use_agreement,
+    remotePort: tunnel.return_port,
+    originalData: { ...tunnel }
+  }
+  showEditModal.value = true
+}
+
+// 更新隧道
+const updateTunnel = async () => {
+  editLoading.value = true
+  try {
+    const updates = []
+    
+    // 检查哪些字段被修改了
+    if (editForm.value.localIp !== editForm.value.originalData.Local_ip) {
+      updates.push({ mode: 'localip', value: editForm.value.localIp })
+    }
+    if (editForm.value.localPort !== editForm.value.originalData.Local_port) {
+      updates.push({ mode: 'port', value: editForm.value.localPort.toString() })
+    }
+    if (editForm.value.protocol !== editForm.value.originalData.use_agreement) {
+      updates.push({ mode: 'agreement', value: editForm.value.protocol })
+    }
+    if (editForm.value.remotePort !== editForm.value.originalData.return_port) {
+      updates.push({ mode: 'return_port', value: editForm.value.remotePort.toString() })
+    }
+    
+    if (updates.length === 0) {
+      showError('没有修改任何内容')
+      editLoading.value = false
+      return
+    }
+    
+    // 依次执行所有更新
+    for (const update of updates) {
+      const response = await tunnelAPI.modifyTunnel(
+        userStore.tempKey,
+        editForm.value.tunnelName,
+        update.mode,
+        update.value
+      )
+      
+      if (response.code !== 0) {
+        showError(response.msg || `修改${update.mode}失败`)
+        editLoading.value = false
+        return
+      }
+    }
+    
+    showSuccess('隧道修改成功')
+    showEditModal.value = false
+    // 重新加载隧道列表
+    await loadTunnels()
+  } catch (error) {
+    console.error('修改隧道失败:', error)
+    showError('隧道修改失败，请稍后重试')
+  } finally {
+    editLoading.value = false
+  }
+}
+
 // 获取配置 - 跳转到配置文件页面
 const getConfig = (tunnelName) => {
   // 跳转到配置文件页面，并传递隧道名称参数
@@ -408,7 +576,7 @@ const getNodeName = (nodeIp) => {
 }
 
 // 查看隧道详情
-const showTunnelDetail = (tunnel) => {
+const showTunnelDetail = async (tunnel) => {
   // 格式化创建时间
   const createTime = tunnel.creation_time || '未知'
   // 格式化最近使用时间
@@ -431,6 +599,44 @@ const showTunnelDetail = (tunnel) => {
   // 查找节点名称
   const node = nodes.value.find(n => n.ip === tunnel.node_ip)
   const nodeName = node ? `${node.node_name} (${node.node_region})` : '未知节点'
+  
+  // 查询隧道流量（今日和最近7天）
+  let todayTraffic = { in_mb: 0, out_mb: 0, total_mb: 0 }
+  let weekTraffic = []
+  try {
+    // 查询今日流量
+    const todayResponse = await tunnelAPI.queryTraffic(userStore.tempKey, {
+      tunnel_name: tunnel.Tunnel_name,
+      date_range: 'today'
+    })
+    console.log('隧道今日流量响应:', todayResponse)
+    if (todayResponse.code === 0 && todayResponse.data) {
+      const summary = todayResponse.data.traffic_summary || {}
+      todayTraffic = {
+        in_mb: summary.total_traffic_in_mb || 0,
+        out_mb: summary.total_traffic_out_mb || 0,
+        total_mb: summary.total_traffic_mb || 0
+      }
+    }
+    
+    // 查询最近7天流量
+    const weekResponse = await tunnelAPI.queryTraffic(userStore.tempKey, {
+      tunnel_name: tunnel.Tunnel_name,
+      date_range: '7days'
+    })
+    console.log('隧道最近7天流量响应:', weekResponse)
+    if (weekResponse.code === 0 && weekResponse.data) {
+      const dailyStats = weekResponse.data.daily_statistics || []
+      weekTraffic = dailyStats.map(day => ({
+        date: day.date,
+        in_mb: day.total_in_mb || 0,
+        out_mb: day.total_out_mb || 0,
+        total_mb: day.total_traffic_mb || 0
+      }))
+    }
+  } catch (error) {
+    console.error('查询隧道流量失败:', error)
+  }
   
   const modal = document.createElement('div')
   modal.className = 'fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4'
@@ -539,25 +745,53 @@ const showTunnelDetail = (tunnel) => {
             </div>
           </div>
           
-          <!-- 流量信息 -->
+          <!-- 今日流量信息 -->
           <div class="bg-green-50 rounded-xl p-4 border border-green-200">
             <h4 class="text-sm font-semibold text-green-900 mb-3 flex items-center">
               <svg class="w-4 h-4 mr-2 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
               </svg>
-              流量信息
+              今日流量
             </h4>
-            <div class="grid grid-cols-2 gap-3 text-sm">
+            <div class="grid grid-cols-3 gap-3 text-sm">
               <div>
-                <span class="text-green-700">流量模式:</span>
-                <p class="text-green-900 mt-1">${tunnel.tunnel_traffic_mode === 'users' ? '用户流量' : '隧道流量'}</p>
+                <span class="text-green-700">上传:</span>
+                <p class="text-green-900 mt-1 font-semibold">${formatTraffic(todayTraffic.in_mb)}</p>
               </div>
               <div>
-                <span class="text-green-700">已用流量:</span>
-                <p class="text-green-900 mt-1">${formatTraffic(tunnel.tunnel_traffic)}</p>
+                <span class="text-green-700">下载:</span>
+                <p class="text-green-900 mt-1 font-semibold">${formatTraffic(todayTraffic.out_mb)}</p>
+              </div>
+              <div>
+                <span class="text-green-700">总计:</span>
+                <p class="text-green-900 mt-1 font-semibold">${formatTraffic(todayTraffic.total_mb)}</p>
               </div>
             </div>
           </div>
+          
+          <!-- 最近7天流量趋势 -->
+          ${weekTraffic.length > 0 ? `
+          <div class="bg-indigo-50 rounded-xl p-4 border border-indigo-200">
+            <h4 class="text-sm font-semibold text-indigo-900 mb-3 flex items-center">
+              <svg class="w-4 h-4 mr-2 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z"></path>
+              </svg>
+              最近7天流量
+            </h4>
+            <div class="space-y-2 text-xs">
+              ${weekTraffic.map(day => `
+                <div class="flex justify-between items-center">
+                  <span class="text-indigo-700">${day.date}</span>
+                  <div class="flex space-x-3">
+                    <span class="text-indigo-600">↑${formatTraffic(day.in_mb)}</span>
+                    <span class="text-indigo-600">↓${formatTraffic(day.out_mb)}</span>
+                    <span class="text-indigo-900 font-semibold">${formatTraffic(day.total_mb)}</span>
+                  </div>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+          ` : ''}
         </div>
       </div>
       
