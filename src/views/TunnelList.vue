@@ -145,72 +145,153 @@
     <!-- 创建隧道模态框 -->
     <Transition name="modal-zoom">
       <div v-if="showCreateModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div class="bg-white rounded-lg p-8 max-w-md w-full mx-4">
+      <div class="bg-white rounded-lg p-8 max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto">
         <h2 class="text-xl font-bold text-gray-900 mb-6">创建隧道</h2>
         
-        <form @submit.prevent="createTunnel" class="space-y-4">
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">隧道名称</label>
-            <input v-model="createForm.tunnelName" 
-                   type="text" 
-                   required
-                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#7367f0] focus:border-transparent"
-                   placeholder="请输入隧道名称">
+        <form @submit.prevent="createTunnel" class="space-y-6">
+          <!-- 第一行：名称和协议 -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">隧道名称</label>
+              <input v-model="createForm.tunnelName" 
+                     type="text" 
+                     required
+                     class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#7367f0] focus:border-transparent"
+                     placeholder="请输入隧道名称">
+            </div>
+            
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">协议</label>
+              <select v-model="createForm.protocol" 
+                      required
+                      class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#7367f0] focus:border-transparent">
+                <option value="">请选择协议</option>
+                <option value="tcp">TCP</option>
+                <option value="udp">UDP</option>
+                <option value="http">HTTP</option>
+                <option value="https">HTTPS</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- 第二行：本地IP和端口 -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">本地IP</label>
+              <input v-model="createForm.localIp" 
+                     type="text" 
+                     required
+                     class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#7367f0] focus:border-transparent"
+                     placeholder="127.0.0.1">
+            </div>
+            
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">本地端口</label>
+              <input v-model="createForm.localPort" 
+                     type="number" 
+                     required
+                     class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#7367f0] focus:border-transparent"
+                     placeholder="8080">
+            </div>
           </div>
           
+          <!-- 第三行：节点选择 -->
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">本地IP</label>
-            <input v-model="createForm.localIp" 
-                   type="text" 
-                   required
-                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#7367f0] focus:border-transparent"
-                   placeholder="127.0.0.1">
+            <label class="block text-sm font-medium text-gray-700 mb-2">选择节点</label>
+            
+            <!-- 筛选器 -->
+            <div class="flex flex-wrap gap-2 mb-4 text-sm">
+              <div class="flex items-center space-x-2 bg-gray-50 px-3 py-1.5 rounded-lg border border-gray-200">
+                <span class="text-gray-500">区域:</span>
+                <button type="button" @click="nodeFilters.region = 'all'" :class="nodeFilters.region === 'all' ? 'text-[#7367f0] font-bold' : 'text-gray-600 hover:text-gray-900'">全部</button>
+                <button type="button" @click="nodeFilters.region = 'mainland'" :class="nodeFilters.region === 'mainland' ? 'text-[#7367f0] font-bold' : 'text-gray-600 hover:text-gray-900'">国内</button>
+                <button type="button" @click="nodeFilters.region = 'overseas'" :class="nodeFilters.region === 'overseas' ? 'text-[#7367f0] font-bold' : 'text-gray-600 hover:text-gray-900'">海外</button>
+              </div>
+              <div class="flex items-center space-x-2 bg-gray-50 px-3 py-1.5 rounded-lg border border-gray-200">
+                <span class="text-gray-500">类型:</span>
+                <button type="button" @click="nodeFilters.type = 'all'" :class="nodeFilters.type === 'all' ? 'text-[#7367f0] font-bold' : 'text-gray-600 hover:text-gray-900'">全部</button>
+                <button type="button" @click="nodeFilters.type = 'bgp'" :class="nodeFilters.type === 'bgp' ? 'text-[#7367f0] font-bold' : 'text-gray-600 hover:text-gray-900'">BGP</button>
+                <button type="button" @click="nodeFilters.type = 'single'" :class="nodeFilters.type === 'single' ? 'text-[#7367f0] font-bold' : 'text-gray-600 hover:text-gray-900'">单线</button>
+              </div>
+              <div class="flex items-center space-x-2 bg-gray-50 px-3 py-1.5 rounded-lg border border-gray-200">
+                <span class="text-gray-500">价格:</span>
+                <button type="button" @click="nodeFilters.price = 'all'" :class="nodeFilters.price === 'all' ? 'text-[#7367f0] font-bold' : 'text-gray-600 hover:text-gray-900'">全部</button>
+                <button type="button" @click="nodeFilters.price = 'free'" :class="nodeFilters.price === 'free' ? 'text-[#7367f0] font-bold' : 'text-gray-600 hover:text-gray-900'">免费</button>
+                <button type="button" @click="nodeFilters.price = 'paid'" :class="nodeFilters.price === 'paid' ? 'text-[#7367f0] font-bold' : 'text-gray-600 hover:text-gray-900'">付费</button>
+              </div>
+            </div>
+
+            <!-- 节点列表 -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 max-h-60 overflow-y-auto p-1 border border-gray-200 rounded-lg bg-gray-50">
+              <div v-if="filteredNodes.length === 0" class="col-span-full text-center py-8 text-gray-500">
+                没有找到匹配的节点
+              </div>
+              <div v-for="node in filteredNodes" :key="node.ip" 
+                   @click="createForm.nodeIp = node.ip"
+                   :class="['cursor-pointer border rounded-lg p-3 transition-all relative bg-white hover:shadow-sm h-full flex flex-col justify-between', createForm.nodeIp === node.ip ? 'border-[#7367f0] ring-1 ring-[#7367f0] bg-indigo-50/30' : 'border-gray-200 hover:border-[#7367f0]/50']">
+                 <div class="flex items-start justify-between mb-2">
+                   <div class="flex items-start flex-1 mr-2">
+                     <!-- 简单的地区标识 -->
+                     <span class="w-2 h-2 rounded-full mr-2 mt-1.5 flex-shrink-0" :class="isChinaNode(node) ? 'bg-red-500' : 'bg-blue-500'"></span>
+                     <h4 class="font-medium text-sm break-words whitespace-normal leading-tight" 
+                         :class="node.user_group !== 'default' ? 'text-amber-500 font-bold' : 'text-gray-900'">
+                       {{ node.node_name }}
+                     </h4>
+                   </div>
+                   <span class="text-xs bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded whitespace-nowrap flex-shrink-0">{{ node.node_group || '默认' }}</span>
+                 </div>
+                 
+                 <div class="mt-auto flex flex-wrap gap-1">
+                   <!-- 用户组标签 -->
+                   <span v-if="node.user_group !== 'default'" class="text-[10px] bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded border border-amber-200 font-medium">
+                     {{ node.user_group }}
+                   </span>
+                   
+                   <!-- 积分/免费标签 -->
+                   <span v-if="node.need_integral > 0" class="text-[10px] bg-orange-100 text-orange-700 px-1.5 py-0.5 rounded">
+                     {{ node.need_integral }} 积分
+                   </span>
+                   <span v-else class="text-[10px] bg-green-100 text-green-700 px-1.5 py-0.5 rounded">
+                     免费
+                   </span>
+                   
+                   <!-- 地区标签 -->
+                   <span class="text-[10px] bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded">
+                     {{ isChinaNode(node) ? '国内' : '海外' }}
+                   </span>
+                 </div>
+              </div>
+            </div>
+            <p v-if="createForm.nodeIp" class="text-sm text-green-600 mt-2 flex items-center">
+              <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+              已选择: {{ getNodeName(createForm.nodeIp) }}
+            </p>
           </div>
           
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">本地端口</label>
-            <input v-model="createForm.localPort" 
-                   type="number" 
-                   required
-                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#7367f0] focus:border-transparent"
-                   placeholder="8080">
-          </div>
-          
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">节点</label>
-            <select v-model="createForm.nodeIp" 
-                    required
-                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#7367f0] focus:border-transparent">
-              <option value="">请选择节点</option>
-              <option v-for="node in nodes" :key="node.ip" :value="node.ip">
-                {{ node.node_name }} ({{ node.node_region }})
-              </option>
-            </select>
-          </div>
-          
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">协议</label>
-            <select v-model="createForm.protocol" 
-                    required
-                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#7367f0] focus:border-transparent">
-              <option value="">请选择协议</option>
-              <option value="tcp">TCP</option>
-              <option value="udp">UDP</option>
-              <!-- <option value="http">HTTP</option> -->
-              <!-- <option value="https">HTTPS</option> -->
-            </select>
-          </div>
-          
+          <!-- 第四行：远程端口 -->
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-1">远程端口</label>
-            <input v-model="createForm.remotePort" 
-                   type="number" 
-                   required
-                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#7367f0] focus:border-transparent"
-                   placeholder="自动分配或指定端口">
+            <div class="flex gap-2">
+              <input v-model="createForm.remotePort" 
+                     type="number" 
+                     class="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#7367f0] focus:border-transparent"
+                     placeholder="输入端口号或留空自动分配">
+              <button type="button" 
+                      @click="checkAndAssignPort" 
+                      :disabled="checkPortLoading || !createForm.nodeIp"
+                      class="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition-colors text-sm whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed flex items-center">
+                <svg v-if="checkPortLoading" class="animate-spin w-4 h-4 mr-1 text-gray-600" fill="none" viewBox="0 0 24 24">
+                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                <svg v-else class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                检查/自动分配
+              </button>
+            </div>
+            <p class="text-xs text-gray-500 mt-1">点击按钮将检查指定端口可用性，或在端口为空时自动分配可用端口。</p>
           </div>
           
-          <div class="flex justify-end space-x-4 pt-4">
+          <div class="flex justify-end space-x-4 pt-4 border-t border-gray-100">
             <button type="button" 
                     @click="showCreateModal = false"
                     class="px-4 py-2 text-gray-600 hover:text-gray-800 transition-colors">
@@ -305,7 +386,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { userStore } from '../stores/user'
 import { tunnelAPI, nodeAPI } from '../api'
@@ -320,6 +401,93 @@ const nodes = ref([])
 const loading = ref(true)
 const createLoading = ref(false)
 const showCreateModal = ref(false)
+const checkPortLoading = ref(false)
+
+// 节点筛选
+const nodeFilters = ref({
+  region: 'all',
+  type: 'all',
+  price: 'all'
+})
+
+// 判断是否为国内节点
+const isChinaNode = (node) => {
+  return node.node_region && (
+    node.node_region.includes('中国') || 
+    node.node_region.includes('China') || 
+    node.node_region.includes('CN') || 
+    node.node_name.includes('中国') || 
+    node.node_name.includes('国内')
+  )
+}
+
+// 过滤后的节点列表
+const filteredNodes = computed(() => {
+  if (!nodes.value) return []
+  
+  return nodes.value.filter(node => {
+    // 区域筛选
+    if (nodeFilters.value.region !== 'all') {
+      const isChina = isChinaNode(node)
+      if (nodeFilters.value.region === 'mainland' && !isChina) return false
+      if (nodeFilters.value.region === 'overseas' && isChina) return false
+    }
+    
+    // 类型筛选 (BGP/单线 - 简单的文本匹配)
+    if (nodeFilters.value.type !== 'all') {
+      const isBGP = node.node_name.toLowerCase().includes('bgp') || (node.node_info && node.node_info.toLowerCase().includes('bgp'))
+      if (nodeFilters.value.type === 'bgp' && !isBGP) return false
+      if (nodeFilters.value.type === 'single' && isBGP) return false
+    }
+    
+    // 价格筛选
+    if (nodeFilters.value.price !== 'all') {
+      const isFree = !node.need_integral || node.need_integral <= 0
+      if (nodeFilters.value.price === 'free' && !isFree) return false
+      if (nodeFilters.value.price === 'paid' && isFree) return false
+    }
+    
+    return true
+  })
+})
+
+// 检查或自动分配端口
+const checkAndAssignPort = async () => {
+  if (!createForm.value.nodeIp) {
+    showError('请先选择一个节点')
+    return
+  }
+  
+  checkPortLoading.value = true
+  try {
+    const portToCheck = createForm.value.remotePort || null
+    const response = await tunnelAPI.checkNodePort(createForm.value.nodeIp, portToCheck)
+    
+    if (response.code === 0) {
+      if (!portToCheck && response.data) {
+        // 自动分配成功
+        createForm.value.remotePort = response.data.node_port
+        showSuccess(`自动分配端口成功：${response.data.node_port}`)
+      } else {
+        // 检查成功
+        showSuccess('该端口可用')
+      }
+    } else {
+      showError(response.msg || '端口不可用')
+    }
+  } catch (error) {
+    console.error('端口检查失败:', error)
+    // showError('检查端口失败，请稍后重试: ' + error.message)
+    // Mock for demo if API fails/not implemented yet
+    if (!createForm.value.remotePort) {
+        // createForm.value.remotePort = Math.floor(Math.random() * (65535 - 10000) + 10000)
+        // showSuccess('测试模式：随机分配端口 ' + createForm.value.remotePort)
+        showError('端口分配服务暂不可用')
+    }
+  } finally {
+    checkPortLoading.value = false
+  }
+}
 
 // 编辑隧道
 const showEditModal = ref(false)

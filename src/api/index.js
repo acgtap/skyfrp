@@ -285,6 +285,15 @@ export const tunnelAPI = {
     })
   },
 
+  // 检查节点端口可用性或自动分配
+  checkNodePort: (nodeIp, returnPort = null) => {
+    const params = { node_ip: nodeIp }
+    if (returnPort) {
+      params.return_port = returnPort
+    }
+    return api.get('/api/node_check_port', { params })
+  },
+
   // 获取节点配置
   getNodeConfig: (userTempKey, userTunnel) => {
     return api.post('/api/get_frp_node_config', {
